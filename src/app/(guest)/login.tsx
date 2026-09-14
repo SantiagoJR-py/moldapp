@@ -11,6 +11,7 @@ import { LockIcon, MailIcon } from '@/components/ui/icons';
 import { TextField } from '@/components/ui/text-field';
 import { useSession } from '@/context/session';
 import { apiMessage } from '@/lib/api-messages';
+import { routes } from '@/lib/routes';
 import { validateEmail } from '@/lib/validation';
 
 export default function LoginRoute() {
@@ -43,7 +44,7 @@ function LoginScreen() {
 
     try {
       await signIn(email, password);
-      router.replace('/home');
+      router.replace(routes.adminHome);
     } catch (error) {
       setFormError(apiMessage(error, 'No pudimos iniciar sesión. Intenta de nuevo.'));
     } finally {

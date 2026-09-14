@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MenuIcon } from '@/components/ui/icons';
 import { roleLabel } from '@/constants/roles';
 import { useSession } from '@/context/session';
+import { routes } from '@/lib/routes';
 import { Avatar } from './avatar';
 
 type TopBarProps = {
@@ -40,7 +41,7 @@ export function TopBar({ onOpenMenu, showMenuButton }: TopBarProps) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Ir a mi perfil"
-          onPress={() => router.navigate('/profile')}
+          onPress={() => router.navigate(routes.adminProfile)}
           className="flex-1 flex-row items-center gap-3 active:opacity-70"
         >
           <Avatar fullName={user.fullName} urlImage={user.urlImage} size={42} />

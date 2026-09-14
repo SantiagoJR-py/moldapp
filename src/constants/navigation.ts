@@ -9,6 +9,7 @@ import {
   UserIcon,
   UsersIcon,
 } from '@/components/ui/icons';
+import { routes } from '@/lib/routes';
 import { RoleName } from './roles';
 
 type IconComponent = ComponentType<{ size?: number; color?: string }>;
@@ -29,8 +30,8 @@ export type NavSection = {
 const GENERAL: NavSection = {
   title: 'General',
   items: [
-    { key: 'home', label: 'Inicio', icon: HomeIcon, href: '/home' },
-    { key: 'profile', label: 'Mi perfil', icon: UserIcon, href: '/profile' },
+    { key: 'home', label: 'Inicio', icon: HomeIcon, href: routes.adminHome },
+    { key: 'profile', label: 'Mi perfil', icon: UserIcon, href: routes.adminProfile },
   ],
 };
 
@@ -54,7 +55,7 @@ const BY_ROLE: Record<string, NavSection> = {
 const DEFAULT_ROLE_SECTION: NavSection = {
   title: 'Mis registros',
   items: [
-    { key: 'my-vehicles', label: 'Mis vehículos', icon: CarIcon, href: '/vehicles' },
+    { key: 'my-vehicles', label: 'Mis vehículos', icon: CarIcon, href: routes.adminVehicles },
     { key: 'my-access', label: 'Mis ingresos', icon: ClipboardIcon },
   ],
 };

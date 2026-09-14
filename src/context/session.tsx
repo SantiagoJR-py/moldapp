@@ -3,18 +3,24 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
+import { Platform } from 'react-native';
 
-import { setAuthToken } from '@/lib/auth-token';
-import { storage } from '@/lib/storage';
+import { getAuthToken, setAuthToken } from '@/lib/auth-token';
+import { ApiError } from '@/lib/http';
+import {
+  clearSession,
+  loadSession,
+  loadSessionSync,
+  saveSession,
+} from '@/lib/session-store';
 import { authService, type AuthUser } from '@/services/auth.service';
 import { profileService } from '@/services/profile.service';
-
-const TOKEN_KEY = 'moldapp.token';
-const USER_KEY = 'moldapp.user';
 
 type SessionValue = {
   token: string | null;
@@ -30,24 +36,40 @@ type SessionValue = {
 const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUserState] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  // En web leemos localStorage una sola vez al montar para no perder la sesión
+  // al recargar o al navegar entre rutas estáticas de Expo.
+  const [boot] = useState(() => (Platform.OS === 'web' ? loadSessionSync() : null));
+  const [token, setToken] = useState<string | null>(boot?.token ?? null);
+  const [user, setUserState] = useState<AuthUser | null>(boot?.user ?? null);
+  const [loading, setLoading] = useState(Platform.OS !== 'web');
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  useLayoutEffect(() => {
+    if (boot?.token) {
+      setAuthToken(boot.token);
+    }
+  }, [boot]);
 
   useEffect(() => {
     let active = true;
 
     void (async () => {
-      const [storedToken, storedUser] = await Promise.all([
-        storage.getItem(TOKEN_KEY),
-        storage.getItem(USER_KEY),
-      ]);
+      const stored = await loadSession();
 
       if (!active) return;
 
-      setAuthToken(storedToken);
-      setToken(storedToken);
-      setUserState(storedUser ? (JSON.parse(storedUser) as AuthUser) : null);
+      if (!stored) {
+        setAuthToken(null);
+        setToken(null);
+        setUserState(null);
+        setLoading(false);
+        return;
+      }
+
+      setAuthToken(stored.token);
+      setToken(stored.token);
+      setUserState(stored.user);
       setLoading(false);
     })();
 
@@ -58,36 +80,42 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const setUser = useCallback(async (next: AuthUser) => {
     setUserState(next);
-    await storage.setItem(USER_KEY, JSON.stringify(next));
+    const current = tokenRef.current ?? getAuthToken();
+    if (current) {
+      await saveSession(current, next);
+    }
   }, []);
 
-  const signIn = useCallback(
-    async (email: string, password: string) => {
-      const result = await authService.login(email, password);
+  const signIn = useCallback(async (email: string, password: string) => {
+    const result = await authService.login(email, password);
 
-      setAuthToken(result.token);
-      setToken(result.token);
-      await storage.setItem(TOKEN_KEY, result.token);
-      await setUser(result.user);
+    setAuthToken(result.token);
+    setToken(result.token);
+    setUserState(result.user);
+    await saveSession(result.token, result.user);
 
-      return result.user;
-    },
-    [setUser],
-  );
+    return result.user;
+  }, []);
 
   const signOut = useCallback(async () => {
     setAuthToken(null);
     setToken(null);
     setUserState(null);
-    await Promise.all([storage.removeItem(TOKEN_KEY), storage.removeItem(USER_KEY)]);
+    await clearSession();
   }, []);
 
-  /** Trae el perfil actualizado; si el token ya no sirve, cierra la sesión. */
+  /**
+   * Trae el perfil actualizado. Solo cierra sesión si el token ya no es válido
+   * (401/403); un fallo de red no debe borrar lo guardado en disco.
+   */
   const refreshProfile = useCallback(async () => {
     try {
       await setUser(await profileService.me());
-    } catch {
-      await signOut();
+    } catch (error) {
+      const status = error instanceof ApiError ? error.status : 0;
+      if (status === 401 || status === 403) {
+        await signOut();
+      }
     }
   }, [setUser, signOut]);
 

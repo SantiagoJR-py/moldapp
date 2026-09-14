@@ -15,13 +15,18 @@ La app corre con un solo código base, pero cada pantalla vive en una plataforma
 | Registro                       | `/register`         | Web        |
 | Cambio de contraseña por hash  | `/password/:hash`   | Web        |
 
-Ya autenticado, las pantallas viven bajo el grupo `(app)` y comparten el mismo
-shell (menú lateral + barra superior) en ambas plataformas:
+Ya autenticado, las pantallas viven bajo **`/admin`** (guard de sesión + shell
+con menú lateral y barra superior):
 
-| Pantalla    | Ruta       |
-| ----------- | ---------- |
-| Inicio      | `/home`    |
-| Mi perfil   | `/profile` |
+| Pantalla       | Ruta              |
+| -------------- | ----------------- |
+| Inicio         | `/admin/home`     |
+| Mi perfil      | `/admin/profile`  |
+| Mis vehículos  | `/admin/vehicles` |
+
+Los guards (`AuthGate` / `GuestGate` en `src/components/auth-gate.tsx`) evitan
+entrar a `/admin` sin sesión y redirigen a `/admin/home` si ya estás logueado
+e intentas abrir login/registro/recuperación.
 
 El menú lateral flota sobre el contenido en móvil y queda fijo a partir de 1024 px
 de ancho. Sus ítems dependen del rol (`src/constants/navigation.ts`); los que

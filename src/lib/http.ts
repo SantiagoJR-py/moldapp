@@ -1,6 +1,8 @@
-import { getAuthToken } from './auth-token';
+import { getAuthToken, setAuthToken } from './auth-token';
 import { clientHeaders } from './device';
 import { env } from './env';
+import { TOKEN_KEY } from './session-store';
+import { storage } from './storage';
 
 const TIMEOUT_MS = 15000;
 
@@ -37,7 +39,13 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const { method = 'GET', body, auth = false } = options;
 
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
-  const token = auth ? getAuthToken() : null;
+  // Si el provider aún no hidrató el token en memoria (p. ej. primer request en web),
+  // lo recuperamos del almacenamiento para no mandar la petición sin Authorization.
+  let token = auth ? getAuthToken() : null;
+  if (auth && !token) {
+    token = await storage.getItem(TOKEN_KEY);
+    if (token) setAuthToken(token);
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
