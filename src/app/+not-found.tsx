@@ -4,9 +4,13 @@ import { Text, View } from 'react-native';
 import { LogoMark } from '@/components/brand/logo';
 import { AuthScreen, Card } from '@/components/ui/auth-screen';
 import { Button } from '@/components/ui/button';
+import { useSession } from '@/context/session';
+import { routes } from '@/lib/routes';
 import { entryRoute } from '@/lib/surface';
 
 export default function NotFoundScreen() {
+  const { user } = useSession();
+
   return (
     <AuthScreen>
       <Card>
@@ -16,7 +20,10 @@ export default function NotFoundScreen() {
           <Text className="text-center text-sm leading-5 text-steel-400">
             El enlace que abriste no existe o no está disponible en esta plataforma.
           </Text>
-          <Button label="Volver al inicio" onPress={() => router.replace(entryRoute)} />
+          <Button
+            label="Volver al inicio"
+            onPress={() => router.replace(user ? routes.adminHome : entryRoute)}
+          />
         </View>
       </Card>
     </AuthScreen>

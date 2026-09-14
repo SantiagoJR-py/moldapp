@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { palette } from '@/constants/theme';
 import { useSession } from '@/context/session';
+import { routes } from '@/lib/routes';
 import { entryRoute } from '@/lib/surface';
 
 export default function Index() {
@@ -16,5 +17,5 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={user ? '/home' : entryRoute} />;
+  return <Redirect href={user ? routes.adminHome : entryRoute} />;
 }
