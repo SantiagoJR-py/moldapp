@@ -15,6 +15,18 @@ La app corre con un solo código base, pero cada pantalla vive en una plataforma
 | Registro                       | `/register`         | Web        |
 | Cambio de contraseña por hash  | `/password/:hash`   | Web        |
 
+Ya autenticado, las pantallas viven bajo el grupo `(app)` y comparten el mismo
+shell (menú lateral + barra superior) en ambas plataformas:
+
+| Pantalla    | Ruta       |
+| ----------- | ---------- |
+| Inicio      | `/home`    |
+| Mi perfil   | `/profile` |
+
+El menú lateral flota sobre el contenido en móvil y queda fijo a partir de 1024 px
+de ancho. Sus ítems dependen del rol (`src/constants/navigation.ts`); los que
+todavía no tienen pantalla se muestran deshabilitados con la etiqueta «Pronto».
+
 El reparto lo aplica `SurfaceGate` (`src/components/surface-gate.tsx`): si abres una
 ruta desde la plataforma equivocada, redirige a la pantalla de entrada de esa
 plataforma. Para revisar el diseño móvil desde el navegador, pon
@@ -41,13 +53,16 @@ Requiere **Node 22.13+** (Metro de Expo 57 no soporta versiones anteriores).
 
 ## Endpoints que consume
 
-Todos cuelgan de `/app/user` (ver `src/services/auth.service.ts`):
+Ver `src/services/`:
 
-- `POST /login`
-- `POST /sign-up`
-- `POST /resetPassword`
-- `GET /:hash/verifyHash`
-- `POST /:hash/changePassword`
+- `POST /app/user/login`
+- `POST /app/user/sign-up`
+- `POST /app/user/resetPassword`
+- `GET /app/user/:hash/verifyHash`
+- `POST /app/user/:hash/changePassword`
+- `GET /app/user/me` y `PATCH /app/user/me` (nombre y correo)
+- `POST /app/user/me/photo` (multipart, campo `photo`, máximo 3 MB)
+- `GET /app/identification-types`
 
 Cada petición viaja con cabeceras `X-Client-*` (user agent, navegador, dispositivo,
 sistema operativo y huella de instalación) para que el backend pueda armar el

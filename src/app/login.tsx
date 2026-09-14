@@ -10,7 +10,7 @@ import { Button, LinkButton } from '@/components/ui/button';
 import { LockIcon, MailIcon } from '@/components/ui/icons';
 import { TextField } from '@/components/ui/text-field';
 import { useSession } from '@/context/session';
-import { ApiError } from '@/lib/http';
+import { apiMessage } from '@/lib/api-messages';
 import { validateEmail } from '@/lib/validation';
 
 export default function LoginRoute() {
@@ -45,9 +45,7 @@ function LoginScreen() {
       await signIn(email, password);
       router.replace('/home');
     } catch (error) {
-      setFormError(
-        error instanceof ApiError ? error.message : 'No pudimos iniciar sesión. Intenta de nuevo.',
-      );
+      setFormError(apiMessage(error, 'No pudimos iniciar sesión. Intenta de nuevo.'));
     } finally {
       setSubmitting(false);
     }

@@ -9,6 +9,7 @@ import { Banner } from '@/components/ui/banner';
 import { Button, LinkButton } from '@/components/ui/button';
 import { ArrowLeftIcon, MailIcon } from '@/components/ui/icons';
 import { TextField } from '@/components/ui/text-field';
+import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
 import { authService } from '@/services/auth.service';
 import { validateEmail } from '@/lib/validation';
@@ -53,9 +54,7 @@ function ForgotPasswordScreen() {
       setFormError(
         error instanceof ApiError && error.status === 404
           ? 'No encontramos una cuenta con ese correo.'
-          : error instanceof ApiError
-            ? error.message
-            : 'No pudimos enviar el correo. Intenta de nuevo.',
+          : apiMessage(error, 'No pudimos enviar el correo. Intenta de nuevo.'),
       );
     } finally {
       setSubmitting(false);

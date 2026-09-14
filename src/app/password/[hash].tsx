@@ -11,6 +11,7 @@ import { LockIcon } from '@/components/ui/icons';
 import { PasswordMeter } from '@/components/ui/password-meter';
 import { TextField } from '@/components/ui/text-field';
 import { palette } from '@/constants/theme';
+import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
 import { validatePassword, validatePasswordConfirmation } from '@/lib/validation';
 import { authService } from '@/services/auth.service';
@@ -86,11 +87,7 @@ function ChangePasswordScreen() {
         return;
       }
 
-      setFormError(
-        error instanceof ApiError
-          ? error.message
-          : 'No pudimos cambiar la contraseña. Intenta de nuevo.',
-      );
+      setFormError(apiMessage(error, 'No pudimos cambiar la contraseña. Intenta de nuevo.'));
     } finally {
       setSubmitting(false);
     }
