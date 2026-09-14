@@ -8,6 +8,4 @@ const LOCAL_FALLBACK = Platform.select({
 
 export const env = {
   apiUrl: process.env.EXPO_PUBLIC_API_URL ?? LOCAL_FALLBACK,
-  /** Prefijo que monta `authRouter` en moldapp-back (`app.use('/app/user', authRouter)`). */
-  authBasePath: '/app/user',
 } as const;

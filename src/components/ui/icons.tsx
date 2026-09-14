@@ -53,6 +53,70 @@ export function InfoIcon(props: IconProps) {
   return <Line {...props} d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5.5M12 7.8v.3" />;
 }
 
+export function HomeIcon(props: IconProps) {
+  return <Line {...props} d="M4 10.5 12 4l8 6.5V20h-5.5v-5h-5v5H4z" />;
+}
+
+export function CarIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M3.5 16.5v-3l2-5h13l2 5v3M3.5 16.5h17M3.5 16.5v2h3v-2M20.5 16.5v2h-3v-2M7 13h2M15 13h2"
+    />
+  );
+}
+
+export function ClipboardIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M9 4.5h6v2.5H9zM7 6h-2v14h14V6h-2M8.5 11h7M8.5 14.5h7M8.5 18h4"
+    />
+  );
+}
+
+export function UsersIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M9.5 11.5a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5ZM3 19.5c0-3 2.9-4.75 6.5-4.75s6.5 1.75 6.5 4.75M16 5.5a3.25 3.25 0 0 1 0 6.5M18 14.9c1.9.55 3 1.85 3 3.6"
+    />
+  );
+}
+
+export function ShieldIcon(props: IconProps) {
+  return <Line {...props} d="M12 3.5 5 6v6c0 4 3 6.8 7 8.5 4-1.7 7-4.5 7-8.5V6zM9 12l2.2 2.2L15.2 10" />;
+}
+
+export function LogoutIcon(props: IconProps) {
+  return <Line {...props} d="M15 4.5h3.5v15H15M11 12h-8M6.5 8 3 12l3.5 4" />;
+}
+
+export function MenuIcon(props: IconProps) {
+  return <Line {...props} d="M4 7h16M4 12h16M4 17h11" />;
+}
+
+export function CloseIcon(props: IconProps) {
+  return <Line {...props} d="M6 6l12 12M18 6 6 18" />;
+}
+
+export function CameraIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M3.5 8.5h3l1.5-2.5h8l1.5 2.5h3v10h-17zM12 16.2a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Z"
+    />
+  );
+}
+
+export function PencilIcon(props: IconProps) {
+  return <Line {...props} d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17zM15 6l3 3" />;
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return <Line {...props} d="m9.5 5.5 6.5 6.5-6.5 6.5" />;
+}
+
 export function EyeIcon({ size = 20, color = palette.steel400 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

@@ -8,8 +8,10 @@ import {
   type ReactNode,
 } from 'react';
 
+import { setAuthToken } from '@/lib/auth-token';
 import { storage } from '@/lib/storage';
 import { authService, type AuthUser } from '@/services/auth.service';
+import { profileService } from '@/services/profile.service';
 
 const TOKEN_KEY = 'moldapp.token';
 const USER_KEY = 'moldapp.user';
@@ -20,13 +22,16 @@ type SessionValue = {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<AuthUser>;
   signOut: () => Promise<void>;
+  /** Reemplaza el usuario en memoria y en disco tras editar el perfil. */
+  setUser: (user: AuthUser) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUserState] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,8 +45,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
       if (!active) return;
 
+      setAuthToken(storedToken);
       setToken(storedToken);
-      setUser(storedUser ? (JSON.parse(storedUser) as AuthUser) : null);
+      setUserState(storedUser ? (JSON.parse(storedUser) as AuthUser) : null);
       setLoading(false);
     })();
 
@@ -50,28 +56,44 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const result = await authService.login(email, password);
-
-    await Promise.all([
-      storage.setItem(TOKEN_KEY, result.token),
-      storage.setItem(USER_KEY, JSON.stringify(result.user)),
-    ]);
-
-    setToken(result.token);
-    setUser(result.user);
-    return result.user;
+  const setUser = useCallback(async (next: AuthUser) => {
+    setUserState(next);
+    await storage.setItem(USER_KEY, JSON.stringify(next));
   }, []);
+
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const result = await authService.login(email, password);
+
+      setAuthToken(result.token);
+      setToken(result.token);
+      await storage.setItem(TOKEN_KEY, result.token);
+      await setUser(result.user);
+
+      return result.user;
+    },
+    [setUser],
+  );
 
   const signOut = useCallback(async () => {
-    await Promise.all([storage.removeItem(TOKEN_KEY), storage.removeItem(USER_KEY)]);
+    setAuthToken(null);
     setToken(null);
-    setUser(null);
+    setUserState(null);
+    await Promise.all([storage.removeItem(TOKEN_KEY), storage.removeItem(USER_KEY)]);
   }, []);
 
+  /** Trae el perfil actualizado; si el token ya no sirve, cierra la sesión. */
+  const refreshProfile = useCallback(async () => {
+    try {
+      await setUser(await profileService.me());
+    } catch {
+      await signOut();
+    }
+  }, [setUser, signOut]);
+
   const value = useMemo<SessionValue>(
-    () => ({ token, user, loading, signIn, signOut }),
-    [token, user, loading, signIn, signOut],
+    () => ({ token, user, loading, signIn, signOut, setUser, refreshProfile }),
+    [token, user, loading, signIn, signOut, setUser, refreshProfile],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

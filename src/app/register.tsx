@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { BrandHeader } from '@/components/brand/logo';
@@ -8,9 +8,10 @@ import { Banner } from '@/components/ui/banner';
 import { Button, LinkButton } from '@/components/ui/button';
 import { IdIcon, LockIcon, MailIcon, UserIcon } from '@/components/ui/icons';
 import { PasswordMeter } from '@/components/ui/password-meter';
-import { SelectField } from '@/components/ui/select-field';
+import { SelectField, type SelectOption } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
 import { IDENTIFICATION_TYPES } from '@/constants/identification-types';
+import { catalogService } from '@/services/catalog.service';
 import { ApiError } from '@/lib/http';
 import {
   validateEmail,
@@ -20,7 +21,7 @@ import {
 } from '@/lib/validation';
 import { authService } from '@/services/auth.service';
 
-const IDENTIFICATION_OPTIONS = IDENTIFICATION_TYPES.map((type) => ({
+const FALLBACK_OPTIONS: SelectOption[] = IDENTIFICATION_TYPES.map((type) => ({
   value: type.id,
   label: type.name,
 }));
@@ -47,11 +48,28 @@ function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [identificationTypeId, setIdentificationTypeId] = useState<number | null>(null);
+  const [options, setOptions] = useState(FALLBACK_OPTIONS);
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    void catalogService.identificationTypes().then((types) => {
+      if (!active) return;
+
+      setOptions(
+        types.map((type) => ({ value: type.id, label: type.name ?? `Tipo ${type.id}` })),
+      );
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function reset() {
     setFullName('');
@@ -135,7 +153,7 @@ function RegisterScreen() {
             <SelectField
               label="Tipo de documento"
               placeholder="Selecciona una opción"
-              options={IDENTIFICATION_OPTIONS}
+              options={options}
               value={identificationTypeId}
               onChange={setIdentificationTypeId}
               error={errors.identificationTypeId}
