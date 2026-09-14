@@ -4,6 +4,8 @@ export type AuthUser = {
   id: number;
   fullName: string;
   email: string | null;
+  identification: string | null;
+  phone: string | null;
   urlImage: string | null;
   hash: string | null;
   roleId: number;
@@ -30,6 +32,8 @@ export const authService = {
   signUp(input: {
     fullName: string;
     email: string;
+    identification: string;
+    phone: string;
     password: string;
     identificationTypeId: number;
   }): Promise<MessageResponse> {
@@ -38,6 +42,8 @@ export const authService = {
       body: {
         fullName: input.fullName.trim(),
         email: input.email.trim().toLowerCase(),
+        identification: input.identification.trim(),
+        phone: input.phone.trim(),
         password: input.password,
         identificationTypeId: input.identificationTypeId,
       },

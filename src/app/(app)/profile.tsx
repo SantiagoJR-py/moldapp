@@ -6,13 +6,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '@/components/app/avatar';
 import { Banner } from '@/components/ui/banner';
 import { Button } from '@/components/ui/button';
-import { CameraIcon, IdIcon, MailIcon, UserIcon } from '@/components/ui/icons';
+import { CameraIcon, IdIcon, MailIcon, PhoneIcon, ShieldIcon, UserIcon } from '@/components/ui/icons';
 import { TextField } from '@/components/ui/text-field';
 import { roleLabel } from '@/constants/roles';
 import { palette } from '@/constants/theme';
 import { useSession } from '@/context/session';
-import { ApiError } from '@/lib/http';
-import { validateEmail, validateFullName } from '@/lib/validation';
+import { apiMessage } from '@/lib/api-messages';
+import { validateEmail, validateFullName, validatePhone } from '@/lib/validation';
 import { profileService } from '@/services/profile.service';
 
 export default function ProfileScreen() {
@@ -21,7 +21,12 @@ export default function ProfileScreen() {
 
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [errors, setErrors] = useState<{ fullName?: string | null; email?: string | null }>({});
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [errors, setErrors] = useState<{
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  }>({});
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
   );
@@ -30,7 +35,10 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const dirty = fullName.trim() !== user.fullName || email.trim().toLowerCase() !== (user.email ?? '');
+  const dirty =
+    fullName.trim() !== user.fullName ||
+    email.trim().toLowerCase() !== (user.email ?? '') ||
+    phone.trim() !== (user.phone ?? '');
 
   async function onSave() {
     if (!user) return;
@@ -38,12 +46,13 @@ export default function ProfileScreen() {
     const nextErrors = {
       fullName: validateFullName(fullName),
       email: validateEmail(email),
+      phone: validatePhone(phone),
     };
 
     setErrors(nextErrors);
     setFeedback(null);
 
-    if (nextErrors.fullName || nextErrors.email) return;
+    if (nextErrors.fullName || nextErrors.email || nextErrors.phone) return;
 
     setSaving(true);
 
@@ -51,16 +60,13 @@ export default function ProfileScreen() {
       const updated = await profileService.update({
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
+        phone: phone.trim(),
       });
 
       await setUser(updated);
       setFeedback({ tone: 'success', message: 'Datos actualizados.' });
     } catch (error) {
-      setFeedback({
-        tone: 'error',
-        message:
-          error instanceof ApiError ? error.message : 'No pudimos guardar los cambios.',
-      });
+      setFeedback({ tone: 'error', message: apiMessage(error, 'No pudimos guardar los cambios.') });
     } finally {
       setSaving(false);
     }
@@ -101,10 +107,7 @@ export default function ProfileScreen() {
       await setUser(updated);
       setFeedback({ tone: 'success', message: 'Foto actualizada.' });
     } catch (error) {
-      setFeedback({
-        tone: 'error',
-        message: error instanceof ApiError ? error.message : 'No pudimos subir la foto.',
-      });
+      setFeedback({ tone: 'error', message: apiMessage(error, 'No pudimos subir la foto.') });
     } finally {
       setUploading(false);
     }
@@ -169,6 +172,16 @@ export default function ProfileScreen() {
           inputMode="email"
         />
 
+        <TextField
+          label="Teléfono"
+          value={phone}
+          onChangeText={setPhone}
+          error={errors.phone}
+          icon={<PhoneIcon />}
+          keyboardType="phone-pad"
+          inputMode="tel"
+        />
+
         <Button
           label="Guardar cambios"
           loading={saving}
@@ -184,12 +197,16 @@ export default function ProfileScreen() {
 
         <ReadOnlyRow
           icon={<IdIcon size={18} />}
-          label="Tipo de documento"
-          value={user.identificationType?.name ?? `#${user.identificationTypeId}`}
+          label="Documento"
+          value={
+            user.identification
+              ? `${user.identificationType?.name ?? 'Documento'} ${user.identification}`
+              : (user.identificationType?.name ?? 'Sin registrar')
+          }
         />
         <ReadOnlyRow icon={<UserIcon size={18} />} label="Rol" value={roleLabel(user.role?.name)} />
         <ReadOnlyRow
-          icon={<UserIcon size={18} />}
+          icon={<ShieldIcon size={18} />}
           label="Estado"
           value={user.state === 'ENABLED' ? 'Activo' : 'Inactivo'}
         />

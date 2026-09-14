@@ -37,6 +37,15 @@ export function IdIcon(props: IconProps) {
   return <Line {...props} d="M3.5 5.5h17v13h-17zM9 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5.8 16c.5-1.7 1.8-2.5 3.2-2.5s2.7.8 3.2 2.5M14.5 10h4M14.5 13.5h4" />;
 }
 
+export function PhoneIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M7.5 3.5h9v17h-9zM10.5 17.8h3"
+    />
+  );
+}
+
 export function ArrowLeftIcon(props: IconProps) {
   return <Line {...props} d="M19 12H5M11 6l-6 6 6 6" />;
 }

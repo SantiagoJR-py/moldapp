@@ -6,6 +6,7 @@ type ProfileResponse = { ok: boolean; user: AuthUser };
 export type ProfileUpdate = {
   fullName?: string;
   email?: string;
+  phone?: string;
 };
 
 export type PhotoUpload = {
@@ -21,7 +22,7 @@ export const profileService = {
     return response.user;
   },
 
-  /** PATCH /app/user/me — solo nombre y correo; rol y documento los cambia un administrador. */
+  /** PATCH /app/user/me — nombre, correo y teléfono; rol y documento los cambia un administrador. */
   async update(input: ProfileUpdate): Promise<AuthUser> {
     const response = await request<ProfileResponse>('/app/user/me', {
       method: 'PATCH',

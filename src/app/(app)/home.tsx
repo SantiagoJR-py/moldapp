@@ -42,7 +42,9 @@ export default function HomeScreen() {
         </Text>
         <Text className="mt-2 text-base text-steel-100">{roleLabel(user.role?.name)}</Text>
         <Text className="mt-1 text-sm text-steel-500">
-          {user.identificationType?.name ?? 'Documento sin registrar'}
+          {user.identification
+            ? `${user.identificationType?.name ?? 'Documento'} ${user.identification}`
+            : 'Documento sin registrar'}
         </Text>
       </View>
 

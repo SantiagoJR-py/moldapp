@@ -17,6 +17,26 @@ export function validateFullName(value: string): string | null {
   return null;
 }
 
+export function validateIdentification(value: string): string | null {
+  const identification = value.trim();
+  if (!identification) return 'El número de documento es obligatorio.';
+  if (!/^[a-zA-Z0-9.-]{5,20}$/.test(identification)) {
+    return 'Usa entre 5 y 20 caracteres, sin espacios.';
+  }
+  return null;
+}
+
+export function validatePhone(value: string): string | null {
+  const phone = value.trim();
+  if (!phone) return 'El teléfono es obligatorio.';
+
+  const digits = phone.replace(/[\s()-]/g, '');
+  if (!/^\+?\d{7,15}$/.test(digits)) {
+    return 'Escribe un teléfono válido (7 a 15 dígitos).';
+  }
+  return null;
+}
+
 export function validatePassword(value: string): string | null {
   if (!value) return 'La contraseña es obligatoria.';
   if (value.length < PASSWORD_MIN_LENGTH) {
