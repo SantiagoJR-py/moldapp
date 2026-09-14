@@ -1,5 +1,6 @@
-import { env } from './env';
+import { getAuthToken } from './auth-token';
 import { clientHeaders } from './device';
+import { env } from './env';
 
 const TIMEOUT_MS = 15000;
 
@@ -27,27 +28,34 @@ function messageFromPayload(payload: unknown, status: number): string {
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
-  token?: string | null;
+  /** Adjunta el token de la sesión activa. */
+  auth?: boolean;
 };
 
+/** `path` es absoluto desde la raíz del API, por ejemplo `/app/user/login`. */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, token } = options;
+  const { method = 'GET', body, auth = false } = options;
+
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const token = auth ? getAuthToken() : null;
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   let response: Response;
 
   try {
-    response = await fetch(`${env.apiUrl}${env.authBasePath}${path}`, {
+    response = await fetch(`${env.apiUrl}${path}`, {
       method,
       signal: controller.signal,
       headers: {
         Accept: 'application/json',
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        // Con FormData el runtime pone el Content-Type con su boundary.
+        ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(await clientHeaders()),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
     });
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {

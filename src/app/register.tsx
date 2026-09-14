@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { BrandHeader } from '@/components/brand/logo';
@@ -6,21 +6,24 @@ import { SurfaceGate } from '@/components/surface-gate';
 import { AuthScreen, Card } from '@/components/ui/auth-screen';
 import { Banner } from '@/components/ui/banner';
 import { Button, LinkButton } from '@/components/ui/button';
-import { IdIcon, LockIcon, MailIcon, UserIcon } from '@/components/ui/icons';
+import { IdIcon, LockIcon, MailIcon, PhoneIcon, UserIcon } from '@/components/ui/icons';
 import { PasswordMeter } from '@/components/ui/password-meter';
-import { SelectField } from '@/components/ui/select-field';
+import { SelectField, type SelectOption } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
 import { IDENTIFICATION_TYPES } from '@/constants/identification-types';
-import { ApiError } from '@/lib/http';
+import { catalogService } from '@/services/catalog.service';
+import { apiMessage } from '@/lib/api-messages';
 import {
   validateEmail,
   validateFullName,
+  validateIdentification,
   validatePassword,
   validatePasswordConfirmation,
+  validatePhone,
 } from '@/lib/validation';
 import { authService } from '@/services/auth.service';
 
-const IDENTIFICATION_OPTIONS = IDENTIFICATION_TYPES.map((type) => ({
+const FALLBACK_OPTIONS: SelectOption[] = IDENTIFICATION_TYPES.map((type) => ({
   value: type.id,
   label: type.name,
 }));
@@ -28,6 +31,8 @@ const IDENTIFICATION_OPTIONS = IDENTIFICATION_TYPES.map((type) => ({
 type FieldErrors = {
   fullName?: string | null;
   email?: string | null;
+  identification?: string | null;
+  phone?: string | null;
   password?: string | null;
   confirmation?: string | null;
   identificationTypeId?: string | null;
@@ -44,18 +49,39 @@ export default function RegisterRoute() {
 function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [identification, setIdentification] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [identificationTypeId, setIdentificationTypeId] = useState<number | null>(null);
+  const [options, setOptions] = useState(FALLBACK_OPTIONS);
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [created, setCreated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+
+    void catalogService.identificationTypes().then((types) => {
+      if (!active) return;
+
+      setOptions(
+        types.map((type) => ({ value: type.id, label: type.name ?? `Tipo ${type.id}` })),
+      );
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   function reset() {
     setFullName('');
     setEmail('');
+    setIdentification('');
+    setPhone('');
     setPassword('');
     setConfirmation('');
     setIdentificationTypeId(null);
@@ -67,6 +93,8 @@ function RegisterScreen() {
     const nextErrors: FieldErrors = {
       fullName: validateFullName(fullName),
       email: validateEmail(email),
+      identification: validateIdentification(identification),
+      phone: validatePhone(phone),
       password: validatePassword(password),
       confirmation: validatePasswordConfirmation(password, confirmation),
       identificationTypeId: identificationTypeId ? null : 'Selecciona un tipo de documento.',
@@ -80,12 +108,17 @@ function RegisterScreen() {
     setSubmitting(true);
 
     try {
-      await authService.signUp({ fullName, email, password, identificationTypeId });
+      await authService.signUp({
+        fullName,
+        email,
+        identification,
+        phone,
+        password,
+        identificationTypeId,
+      });
       setCreated(true);
     } catch (error) {
-      setFormError(
-        error instanceof ApiError ? error.message : 'No pudimos crear la cuenta. Intenta de nuevo.',
-      );
+      setFormError(apiMessage(error, 'No pudimos crear la cuenta. Intenta de nuevo.'));
     } finally {
       setSubmitting(false);
     }
@@ -135,11 +168,37 @@ function RegisterScreen() {
             <SelectField
               label="Tipo de documento"
               placeholder="Selecciona una opción"
-              options={IDENTIFICATION_OPTIONS}
+              options={options}
               value={identificationTypeId}
               onChange={setIdentificationTypeId}
               error={errors.identificationTypeId}
               icon={<IdIcon />}
+            />
+
+            <TextField
+              label="Número de documento"
+              placeholder="Sin puntos ni espacios"
+              value={identification}
+              onChangeText={setIdentification}
+              error={errors.identification}
+              hint="No podrás cambiarlo después: verifica que esté bien."
+              icon={<IdIcon />}
+              keyboardType="number-pad"
+              autoCapitalize="characters"
+              inputMode="numeric"
+            />
+
+            <TextField
+              label="Teléfono"
+              placeholder="3001234567"
+              value={phone}
+              onChangeText={setPhone}
+              error={errors.phone}
+              icon={<PhoneIcon />}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              inputMode="tel"
             />
 
             <TextField
