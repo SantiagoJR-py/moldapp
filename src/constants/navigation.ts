@@ -54,7 +54,7 @@ const BY_ROLE: Record<string, NavSection> = {
 const DEFAULT_ROLE_SECTION: NavSection = {
   title: 'Mis registros',
   items: [
-    { key: 'my-vehicles', label: 'Mis vehículos', icon: CarIcon },
+    { key: 'my-vehicles', label: 'Mis vehículos', icon: CarIcon, href: '/vehicles' },
     { key: 'my-access', label: 'Mis ingresos', icon: ClipboardIcon },
   ],
 };

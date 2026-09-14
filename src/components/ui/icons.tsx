@@ -122,6 +122,14 @@ export function PencilIcon(props: IconProps) {
   return <Line {...props} d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17zM15 6l3 3" />;
 }
 
+export function TrashIcon(props: IconProps) {
+  return <Line {...props} d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10.5 10.5v6M13.5 10.5v6" />;
+}
+
+export function PlusIcon(props: IconProps) {
+  return <Line {...props} d="M12 5v14M5 12h14" />;
+}
+
 export function ChevronRightIcon(props: IconProps) {
   return <Line {...props} d="m9.5 5.5 6.5 6.5-6.5 6.5" />;
 }

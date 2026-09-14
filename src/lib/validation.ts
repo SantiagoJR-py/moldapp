@@ -37,6 +37,31 @@ export function validatePhone(value: string): string | null {
   return null;
 }
 
+/** El back normaliza a mayúsculas y sin separadores: 5 o 6 alfanuméricos. */
+export function normalizePlate(value: string): string {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+export function validatePlate(value: string): string | null {
+  const plate = normalizePlate(value);
+  if (!plate) return 'La placa es obligatoria.';
+  if (!/^[A-Z0-9]{5,6}$/.test(plate)) return 'La placa debe tener 5 o 6 caracteres.';
+  return null;
+}
+
+export const OLDEST_MODEL_YEAR = 1950;
+
+export function validateModelYear(value: string): string | null {
+  const year = Number(value.trim());
+  const maxYear = new Date().getFullYear() + 1;
+
+  if (!value.trim()) return 'El modelo es obligatorio.';
+  if (!Number.isInteger(year) || year < OLDEST_MODEL_YEAR || year > maxYear) {
+    return `Escribe un año entre ${OLDEST_MODEL_YEAR} y ${maxYear}.`;
+  }
+  return null;
+}
+
 export function validatePassword(value: string): string | null {
   if (!value) return 'La contraseña es obligatoria.';
   if (value.length < PASSWORD_MIN_LENGTH) {
