@@ -2,7 +2,6 @@ import type { Href } from 'expo-router';
 import type { ComponentType } from 'react';
 
 import {
-  CarIcon,
   ClipboardIcon,
   HomeIcon,
   ShieldIcon,
@@ -32,6 +31,7 @@ const GENERAL: NavSection = {
   items: [
     { key: 'home', label: 'Inicio', icon: HomeIcon, href: routes.adminHome },
     { key: 'profile', label: 'Mi perfil', icon: UserIcon, href: routes.adminProfile },
+    { key: 'my-access', label: 'Mis ingresos', icon: ClipboardIcon, href: routes.adminAccess },
   ],
 };
 
@@ -39,29 +39,26 @@ const BY_ROLE: Record<string, NavSection> = {
   [RoleName.WARDEN]: {
     title: 'Portería',
     items: [
-      { key: 'check-in', label: 'Registrar ingreso', icon: ShieldIcon },
-      { key: 'access-log', label: 'Historial de accesos', icon: ClipboardIcon },
+      { key: 'check-in', label: 'Registrar ingreso', icon: ShieldIcon, href: routes.adminCheckIn },
     ],
   },
   [RoleName.ADMINISTRATIVE_STAFF]: {
     title: 'Administración',
     items: [
-      { key: 'users', label: 'Usuarios', icon: UsersIcon },
+      {
+        key: 'access-monitor',
+        label: 'Ingresos campus',
+        icon: ClipboardIcon,
+        href: routes.adminAccessMonitor,
+      },
+      { key: 'users', label: 'Usuarios', icon: UsersIcon, href: routes.adminUsers },
       { key: 'reports', label: 'Reportes', icon: ClipboardIcon },
     ],
   },
 };
 
-const DEFAULT_ROLE_SECTION: NavSection = {
-  title: 'Mis registros',
-  items: [
-    { key: 'my-vehicles', label: 'Mis vehículos', icon: CarIcon, href: routes.adminVehicles },
-    { key: 'my-access', label: 'Mis ingresos', icon: ClipboardIcon },
-  ],
-};
-
 export function menuForRole(roleName: string | undefined): NavSection[] {
-  const roleSection = roleName ? (BY_ROLE[roleName] ?? DEFAULT_ROLE_SECTION) : DEFAULT_ROLE_SECTION;
+  const roleSection = roleName ? BY_ROLE[roleName] : undefined;
 
-  return [GENERAL, roleSection];
+  return roleSection ? [GENERAL, roleSection] : [GENERAL];
 }

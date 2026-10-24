@@ -22,6 +22,21 @@ const TRANSLATIONS: Record<string, string> = {
     'La placa debe tener 5 o 6 caracteres.',
   'brandId and versionId are required': 'Elige la marca y la versión.',
   'model must be a valid year': 'Escribe un año de modelo válido.',
+  'User Not Found': 'No encontramos a esa persona con ese documento.',
+  'User already inside': 'Esa persona ya tiene un ingreso abierto. Registra la salida primero.',
+  'Access Not Found': 'No encontramos ese registro de acceso.',
+  'Access already closed': 'Ese ingreso ya tiene salida registrada.',
+  'Vehicle does not belong to the user': 'Ese vehículo está asociado a otra persona.',
+  'Asset Not Found': 'No encontramos ese equipo.',
+  'Asset does not belong to the user': 'Ese equipo no pertenece a esta persona.',
+  'Asset description is required': 'Escribe una descripción del equipo.',
+  'Asset type not found': 'Ese tipo de equipo no corresponde a la marca.',
+  'Multiple users with same identification':
+    'Hay más de una persona con ese documento. Revisa el registro.',
+  Forbidden: 'No tienes permiso para esta acción.',
+  'Role Not Found': 'No encontramos ese rol.',
+  'Cannot change your own role': 'No puedes cambiar tu propio rol.',
+  'roleId is required': 'Elige un rol.',
 };
 
 export function apiMessage(error: unknown, fallback: string): string {

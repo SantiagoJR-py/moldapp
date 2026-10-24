@@ -1,0 +1,29 @@
+---
+description: Convención de ramas Git en MoldApp (sin ID de tarea)
+alwaysApply: true
+---
+
+# Ramas Git — MoldApp
+
+En este proyecto **no hay IDs de tareas** (ClickUp u otro). No pedir ID.
+
+## Nombre (obligatorio)
+
+Formato: `{tipo}/{descripcion}`
+
+- `tipo`: `feature` | `bugfix` | `experiment` | `hotfix` | `chore`
+- `descripcion`: corta, minúsculas, palabras unidas con `-`
+
+Ejemplos: `feature/ingresos-porteria`, `feature/admin-ingresos`, `bugfix/login-sesion`
+
+Incorrectos: ramas con ID de tracker (`feature/86abqwmpd-...`), `feat/...`, sin tipo.
+
+## Cómo crearla
+
+```bash
+git checkout develop
+git pull --ff-only origin develop
+git checkout -b {tipo}/{descripcion}
+```
+
+No trabajar sobre `develop` ni `master`. No mezclar dos temas distintos en la misma rama.
