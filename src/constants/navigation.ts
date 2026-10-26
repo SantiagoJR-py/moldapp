@@ -97,7 +97,7 @@ const GATE: NavSection = {
 const ADMINISTRATION: NavSection = {
   title: 'Administración',
   items: [
-    { key: 'users', label: 'Usuarios', icon: UsersIcon },
+    { key: 'users', label: 'Usuarios', icon: UsersIcon, href: '/users' },
     { key: 'reports', label: 'Reportes', icon: ClipboardIcon },
   ],
 };

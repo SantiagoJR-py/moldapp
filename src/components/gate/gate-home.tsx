@@ -6,13 +6,22 @@ import { PlateChip } from '@/components/plates/plate-chip';
 import { ReadRow } from '@/components/plates/read-row';
 import { plateCard, tabular } from '@/components/plates/styles';
 import { usePlateFeed } from '@/components/plates/use-plate-feed';
-import { AlertIcon, CarIcon, ChevronRightIcon, ScanIcon, ShieldIcon } from '@/components/ui/icons';
+import {
+  AlertIcon,
+  CarIcon,
+  ChevronRightIcon,
+  ScanIcon,
+  ShieldIcon,
+  UsersIcon,
+} from '@/components/ui/icons';
 import { HomeHero } from '@/components/app/home-hero';
 import { ResolvedRow } from '@/components/gate/alert-card';
 import { PressableScale } from '@/components/ui/pressable-scale';
+import { RoleName } from '@/constants/roles';
 import { palette, radius } from '@/constants/theme';
 import { isColombianPlate } from '@/constants/vehicle';
 import { useGateAlerts } from '@/context/gate-alerts';
+import { useSession } from '@/context/session';
 import { PERMANENT_MENU_BREAKPOINT, useContentWidth, WIDE_CONTENT_WIDTH } from '@/lib/layout';
 import { relativeTime } from '@/lib/time';
 import { useNow } from '@/lib/use-now';
@@ -326,9 +335,14 @@ function CamerasCard({
 
 /** Solo en el celular, y solo lo que no está en las pestañas de abajo. */
 function Shortcuts() {
+  const { user } = useSession();
   const items: { label: string; icon: typeof ScanIcon; href: Href }[] = [
     { label: 'Detección manual', icon: ScanIcon, href: '/detection' },
     { label: 'Mis vehículos', icon: CarIcon, href: '/vehicles' },
+    // Administración no tiene pestaña propia: llega a Usuarios desde aquí.
+    ...(user?.role?.name === RoleName.ADMINISTRATIVE_STAFF
+      ? [{ label: 'Usuarios', icon: UsersIcon, href: '/users' as Href }]
+      : []),
   ];
 
   return (

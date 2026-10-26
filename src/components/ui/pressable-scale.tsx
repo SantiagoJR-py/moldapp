@@ -1,6 +1,13 @@
 import * as Haptics from 'expo-haptics';
 import type { ReactNode } from 'react';
-import { Platform, Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  type AccessibilityRole,
+  type AccessibilityState,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { spring } from '@/constants/theme';
@@ -10,6 +17,10 @@ type PressableScaleProps = {
   onPress?: () => void;
   disabled?: boolean;
   accessibilityLabel?: string;
+  /** Por defecto es un botón; una opción de una lista elegible es `radio`. */
+  accessibilityRole?: AccessibilityRole;
+  /** Se suma a `disabled`: por ejemplo `checked` en una opción o `expanded` en una fila. */
+  accessibilityState?: AccessibilityState;
   style?: StyleProp<ViewStyle>;
   /** Cuanto se hunde al tocar. Las superficies grandes se hunden menos. */
   depth?: number;
@@ -28,6 +39,8 @@ export function PressableScale({
   onPress,
   disabled = false,
   accessibilityLabel,
+  accessibilityRole = 'button',
+  accessibilityState,
   style,
   depth = 0.98,
   haptic = true,
@@ -37,9 +50,9 @@ export function PressableScale({
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled }}
+      accessibilityState={{ ...accessibilityState, disabled }}
       disabled={disabled}
       onPressIn={() => {
         // Ver la nota en `button.tsx`: `.set()` es lo que acepta React Compiler.

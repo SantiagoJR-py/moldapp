@@ -23,7 +23,7 @@ const TRANSLATIONS: Record<string, string> = {
   'model must be a valid year': 'Escribe un año de modelo válido.',
   Forbidden: 'Esta sección es solo para Portería y Administración.',
   'Vision service unavailable':
-    'El servicio de lectura no está disponible en este equipo. Revisa que esté encendido (python servidor.py).',
+    'El servicio de lectura no está disponible en este equipo. Revisa que el backend esté encendido con npm run dev:all.',
   'Unsupported file type':
     'Ese tipo de archivo no se puede analizar. Usa JPG, PNG o WEBP, o un video MP4, MOV o AVI.',
   'The file is too large': 'El archivo es demasiado grande. El máximo es 300 MB para videos.',
@@ -52,6 +52,11 @@ const TRANSLATIONS: Record<string, string> = {
   'direction must be ENTRY, EXIT or AUTO': 'Elige entrada, salida o automático.',
   'licensePlateNumber must have 4 to 10 letters or digits':
     'La placa debe tener entre 4 y 10 letras o números.',
+  'Cannot change own role':
+    'No puedes cambiar tu propio rol: pídeselo a otra persona de Administración.',
+  'roleName is not a valid role': 'Elige uno de los roles de la lista.',
+  'Role Not Found': 'Ese rol no existe en este equipo. Reinicia el backend para crearlo.',
+  'User Not Found': 'Esa cuenta ya no existe.',
 };
 
 export function apiMessage(error: unknown, fallback: string): string {
