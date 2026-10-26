@@ -1,8 +1,17 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  FadeOut,
+  interpolateColor,
+  useAnimatedStyle,
+  useDerivedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { palette } from '@/constants/theme';
-import { CheckIcon } from './icons';
+import { motion, palette, radius } from '@/constants/theme';
+import { CheckIcon, ChevronDownIcon } from './icons';
 
 export type SelectOption = {
   value: number;
@@ -24,12 +33,11 @@ type SelectFieldProps = {
   searchable?: boolean;
 };
 
+/** Misma altura que `TextField`, para que un formulario mixto no se vea escalonado. */
+const FIELD_HEIGHT = 52;
+
 function normalize(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
 /** Desplegable inline: evita modales nativos y se comporta igual en web y móvil. */
@@ -54,6 +62,20 @@ export function SelectField({
       ? options.filter((option) => normalize(option.label).includes(needle))
       : options;
 
+  const progress = useDerivedValue(() => withTiming(open ? 1 : 0, { duration: motion.base }));
+
+  const boxStyle = useAnimatedStyle(() => ({
+    borderColor: error
+      ? palette.danger
+      : interpolateColor(progress.value, [0, 1], [palette.ink600, palette.accent500]),
+  }));
+
+  // El galón gira en vez de cambiar de glifo: el movimiento dice "se abrio"
+  // mejor que un triangulo que salta.
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${progress.value * 180}deg` }],
+  }));
+
   function close() {
     setOpen(false);
     setQuery('');
@@ -64,20 +86,24 @@ export function SelectField({
     close();
   }
 
-  const borderClass = error
-    ? 'border-state-danger'
-    : open
-      ? 'border-accent-500'
-      : 'border-ink-600';
+  const boxBase = {
+    height: FIELD_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: radius.field,
+    borderCurve: 'continuous',
+    borderWidth: 1,
+    backgroundColor: palette.ink800,
+    paddingHorizontal: 16,
+  } as const;
 
   return (
     <View className="gap-2">
       <Text className="text-xs font-medium uppercase tracking-wider text-steel-400">{label}</Text>
 
       {open && canSearch ? (
-        <View
-          className={`h-12 flex-row items-center gap-3 rounded-field border bg-ink-800 px-4 ${borderClass}`}
-        >
+        <Animated.View style={[boxBase, boxStyle]}>
           {icon}
           <TextInput
             autoFocus
@@ -85,8 +111,8 @@ export function SelectField({
             onChangeText={setQuery}
             placeholder="Escribe para filtrar…"
             placeholderTextColor={palette.steel500}
-            className="h-12 flex-1 text-base text-steel-100"
-            style={{ outline: 'none' } as never}
+            className="flex-1 text-base text-steel-100"
+            style={{ height: FIELD_HEIGHT, outline: 'none' } as never}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
@@ -97,30 +123,48 @@ export function SelectField({
             hitSlop={8}
             onPress={close}
           >
-            <Text className="text-steel-400">▲</Text>
+            <Animated.View style={chevronStyle}>
+              <ChevronDownIcon size={18} color={palette.accent400} />
+            </Animated.View>
           </Pressable>
-        </View>
+        </Animated.View>
       ) : (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={label}
           accessibilityState={{ expanded: open }}
           onPress={() => setOpen((current) => !current)}
-          className={`h-12 flex-row items-center gap-3 rounded-field border bg-ink-800 px-4 ${borderClass}`}
         >
-          {icon}
-          <Text className={`flex-1 text-base ${selected ? 'text-steel-100' : 'text-steel-500'}`}>
-            {selected?.label ?? placeholder}
-          </Text>
-          <Text className="text-steel-400">{open ? '▲' : '▼'}</Text>
+          <Animated.View style={[boxBase, boxStyle]}>
+            {icon}
+            <Text className={`flex-1 text-base ${selected ? 'text-steel-100' : 'text-steel-500'}`}>
+              {selected?.label ?? placeholder}
+            </Text>
+            <Animated.View style={chevronStyle}>
+              <ChevronDownIcon size={18} color={open ? palette.accent400 : palette.steel400} />
+            </Animated.View>
+          </Animated.View>
         </Pressable>
       )}
 
       {open ? (
-        <View className="overflow-hidden rounded-field border border-ink-600 bg-ink-800">
+        <Animated.View
+          entering={FadeInUp.duration(motion.base).springify().damping(22)}
+          exiting={FadeOut.duration(motion.fast)}
+          style={{
+            overflow: 'hidden',
+            borderRadius: radius.field,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            borderColor: palette.ink600,
+            backgroundColor: palette.ink800,
+            boxShadow: '0px 10px 28px rgba(0, 0, 0, 0.45)',
+          }}
+        >
           <ScrollView
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
-            style={{ maxHeight: 240 }}
+            style={{ maxHeight: 260 }}
           >
             {filtered.length === 0 ? (
               <View className="px-4 py-3">
@@ -130,29 +174,34 @@ export function SelectField({
               </View>
             ) : (
               filtered.map((option, index) => (
-                <Pressable
+                <Animated.View
                   key={option.value}
-                  accessibilityRole="button"
-                  onPress={() => pick(option.value)}
-                  className={`flex-row items-center justify-between px-4 py-3 active:bg-ink-700 ${
-                    index > 0 ? 'border-t border-ink-700' : ''
-                  }`}
+                  entering={FadeIn.duration(motion.fast).delay(Math.min(index, 8) * 18)}
                 >
-                  <Text
-                    className={`text-sm ${
-                      option.value === value ? 'text-accent-300' : 'text-steel-200'
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: option.value === value }}
+                    onPress={() => pick(option.value)}
+                    className={`flex-row items-center justify-between px-4 py-3.5 active:bg-ink-700 ${
+                      index > 0 ? 'border-t border-ink-700' : ''
                     }`}
                   >
-                    {option.label}
-                  </Text>
-                  {option.value === value ? (
-                    <CheckIcon size={16} color={palette.accent300} />
-                  ) : null}
-                </Pressable>
+                    <Text
+                      className={`text-sm ${
+                        option.value === value ? 'font-medium text-accent-300' : 'text-steel-200'
+                      }`}
+                    >
+                      {option.label}
+                    </Text>
+                    {option.value === value ? (
+                      <CheckIcon size={16} color={palette.accent300} />
+                    ) : null}
+                  </Pressable>
+                </Animated.View>
               ))
             )}
           </ScrollView>
-        </View>
+        </Animated.View>
       ) : null}
 
       {error ? <Text className="text-xs text-state-danger">{error}</Text> : null}

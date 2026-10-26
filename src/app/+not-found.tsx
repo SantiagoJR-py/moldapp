@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { LogoMark } from '@/components/brand/logo';
+import { Isotype } from '@/components/brand/logo';
 import { AuthScreen, Card } from '@/components/ui/auth-screen';
 import { Button } from '@/components/ui/button';
 import { entryRoute } from '@/lib/surface';
@@ -11,8 +11,10 @@ export default function NotFoundScreen() {
     <AuthScreen>
       <Card>
         <View className="items-center gap-4">
-          <LogoMark size={44} />
-          <Text className="text-lg font-semibold text-white">Página no encontrada</Text>
+          <Isotype size={52} />
+          <Text className="text-xl font-bold tracking-tight text-steel-100">
+            Página no encontrada
+          </Text>
           <Text className="text-center text-sm leading-5 text-steel-400">
             El enlace que abriste no existe o no está disponible en esta plataforma.
           </Text>

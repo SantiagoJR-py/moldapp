@@ -1,14 +1,16 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { LogoMark } from '@/components/brand/logo';
+import { Isotype } from '@/components/brand/logo';
 import { SurfaceGate } from '@/components/surface-gate';
 import { AuthScreen, Card } from '@/components/ui/auth-screen';
 import { Banner } from '@/components/ui/banner';
 import { Button, LinkButton } from '@/components/ui/button';
 import { ArrowLeftIcon, MailIcon } from '@/components/ui/icons';
+import { PressableScale } from '@/components/ui/pressable-scale';
 import { TextField } from '@/components/ui/text-field';
+import { palette } from '@/constants/theme';
 import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
 import { authService } from '@/services/auth.service';
@@ -65,19 +67,29 @@ function ForgotPasswordScreen() {
     <AuthScreen>
       <View className="gap-8">
         <View className="gap-6">
-          <Pressable
-            accessibilityRole="button"
+          <PressableScale
             accessibilityLabel="Volver"
-            hitSlop={10}
+            depth={0.88}
             onPress={goBack}
-            className="h-10 w-10 items-center justify-center rounded-full border border-ink-600 bg-ink-800 active:opacity-70"
+            style={{
+              height: 42,
+              width: 42,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 21,
+              borderWidth: 1,
+              borderColor: palette.ink600,
+              backgroundColor: palette.ink800,
+            }}
           >
-            <ArrowLeftIcon size={18} />
-          </Pressable>
+            <ArrowLeftIcon size={18} color={palette.steel200} />
+          </PressableScale>
 
           <View className="gap-3">
-            <LogoMark size={44} />
-            <Text className="text-2xl font-semibold text-white">Recupera tu contraseña</Text>
+            <Isotype size={46} />
+            <Text className="text-2xl font-bold tracking-tight text-steel-100">
+              Recupera tu contraseña
+            </Text>
             <Text className="text-sm leading-5 text-steel-400">
               Escribe el correo de tu cuenta y te enviaremos un enlace para crear una contraseña
               nueva.
@@ -127,12 +139,11 @@ function ForgotPasswordScreen() {
                 onSubmitEditing={() => void onSubmit()}
               />
 
-              <Button
-                label="Enviar enlace"
-                loading={submitting}
-                onPress={() => void onSubmit()}
+              <Button label="Enviar enlace" loading={submitting} onPress={() => void onSubmit()} />
+              <LinkButton
+                label="Volver a iniciar sesión"
+                onPress={() => router.replace('/login')}
               />
-              <LinkButton label="Volver a iniciar sesión" onPress={() => router.replace('/login')} />
             </View>
           </Card>
         )}

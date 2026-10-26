@@ -9,12 +9,13 @@ import {
 } from 'react';
 
 import { setAuthToken } from '@/lib/auth-token';
+import { ApiError } from '@/lib/http';
 import { storage } from '@/lib/storage';
 import { authService, type AuthUser } from '@/services/auth.service';
 import { profileService } from '@/services/profile.service';
 
-const TOKEN_KEY = 'moldapp.token';
-const USER_KEY = 'moldapp.user';
+const TOKEN_KEY = 'entryx.token';
+const USER_KEY = 'entryx.user';
 
 type SessionValue = {
   token: string | null;
@@ -82,12 +83,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await Promise.all([storage.removeItem(TOKEN_KEY), storage.removeItem(USER_KEY)]);
   }, []);
 
-  /** Trae el perfil actualizado; si el token ya no sirve, cierra la sesión. */
+  /**
+   * Trae el perfil actualizado; si el token ya no sirve, cierra la sesión. Un corte de red o
+   * un servidor lento no cierran nada: el vigilante no puede quedar fuera por un mal Wi-Fi.
+   */
   const refreshProfile = useCallback(async () => {
     try {
       await setUser(await profileService.me());
-    } catch {
-      await signOut();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) await signOut();
     }
   }, [setUser, signOut]);
 

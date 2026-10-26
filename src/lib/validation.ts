@@ -1,3 +1,5 @@
+import { isColombianPlate } from '@/constants/vehicle';
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 export const PASSWORD_MIN_LENGTH = 8;
@@ -45,7 +47,8 @@ export function normalizePlate(value: string): string {
 export function validatePlate(value: string): string | null {
   const plate = normalizePlate(value);
   if (!plate) return 'La placa es obligatoria.';
-  if (!/^[A-Z0-9]{5,6}$/.test(plate)) return 'La placa debe tener 5 o 6 caracteres.';
+  if (!isColombianPlate(plate))
+    return 'Usa el formato de placa colombiana: ABC123, ABC12D o ABC12.';
   return null;
 }
 
@@ -73,7 +76,10 @@ export function validatePassword(value: string): string | null {
   return null;
 }
 
-export function validatePasswordConfirmation(password: string, confirmation: string): string | null {
+export function validatePasswordConfirmation(
+  password: string,
+  confirmation: string,
+): string | null {
   if (!confirmation) return 'Confirma la contraseña.';
   if (password !== confirmation) return 'Las contraseñas no coinciden.';
   return null;

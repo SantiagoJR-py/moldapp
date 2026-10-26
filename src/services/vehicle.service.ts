@@ -1,4 +1,5 @@
 import { request } from '@/lib/http';
+import { appendFile, type PickedFile } from '@/lib/picked-file';
 
 export type VehicleRef = {
   id: number;
@@ -13,6 +14,8 @@ export type Vehicle = {
   versionId: number;
   brand: VehicleRef | null;
   version: VehicleRef | null;
+  color: string | null;
+  vehicleClass: string | null;
 };
 
 export type VehicleBrand = {
@@ -21,12 +24,41 @@ export type VehicleBrand = {
   versions: VehicleRef[];
 };
 
+/** Marca y línea van por id (catálogo) o por nombre (leídas de la tarjeta y aún no catalogadas). */
 export type VehicleInput = {
   licensePlateNumber: string;
-  brandId: number;
-  versionId: number;
+  brandId?: number;
+  versionId?: number;
+  brandName?: string;
+  lineName?: string;
   model: number;
+  color: string | null;
+  vehicleClass: string | null;
 };
+
+/** Datos leídos de la tarjeta de propiedad, listos para prellenar el formulario. */
+export type CardProposal = {
+  licensePlateNumber: string | null;
+  brandId: number | null;
+  brandName: string | null;
+  versionId: number | null;
+  lineName: string | null;
+  model: number | null;
+  color: string | null;
+  vehicleClass: string | null;
+  service: string | null;
+};
+
+export type ScanResult = {
+  readable: boolean;
+  proposal: CardProposal;
+  /** Campos de `proposal` que la persona debe revisar. */
+  review: (keyof CardProposal)[];
+  plateTaken: boolean;
+};
+
+/** La lectura corre en el equipo de portería; la primera vez carga sus modelos. */
+const SCAN_TIMEOUT_MS = 60 * 1000;
 
 type VehiclesResponse = { ok: boolean; vehicles: Vehicle[] };
 type VehicleResponse = { ok: boolean; vehicle: Vehicle };
@@ -65,6 +97,18 @@ export const vehicleService = {
     });
 
     return response.vehicle;
+  },
+
+  /** POST /app/vehicles/scan-card — lee la tarjeta; no guarda ni el vehículo ni la foto. */
+  async scanCard(photo: PickedFile): Promise<ScanResult> {
+    const form = new FormData();
+    appendFile(form, 'photo', photo);
+    return request<ScanResult>('/app/vehicles/scan-card', {
+      method: 'POST',
+      auth: true,
+      body: form,
+      timeoutMs: SCAN_TIMEOUT_MS,
+    });
   },
 
   /** DELETE /app/vehicles/:id */

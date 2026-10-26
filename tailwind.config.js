@@ -5,43 +5,48 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Fondos: azul-grises muy oscuros.
+        // Paleta ENTRYX. Los nombres de escala se conservan del tema anterior
+        // para no romper las clases ya escritas; solo cambian los valores.
+        //
+        // Fondos y superficies: del obsidiana al azul acero.
         ink: {
-          950: '#080B10',
-          900: '#0C1117',
-          800: '#121924',
-          700: '#1A2331',
-          600: '#243040',
-          500: '#304054',
+          950: '#080C12', // Obsidian  - fondo raiz
+          900: '#0D1B2A', // Police Navy - superficie / tarjeta
+          800: '#142B42', // Deep Blue - superficie elevada
+          700: '#1D3A56', // hairline fuerte
+          600: '#31506B', // Steel Blue - bordes
+          500: '#3F6183', // borde resaltado
         },
-        // Bordes y texto secundario.
+        // Texto y bordes claros.
         steel: {
-          700: '#2A3644',
-          600: '#3A4859',
-          500: '#55657A',
-          400: '#7C8A9C',
-          300: '#A3AFBF',
-          200: '#C9D2DD',
-          100: '#E7ECF2',
+          700: '#31506B', // Steel Blue
+          600: '#475569',
+          500: '#64748B', // Slate - texto terciario
+          400: '#8494A8',
+          300: '#A8B6C8',
+          200: '#CBD5E1', // Ice Gray - texto secundario
+          100: '#F1F5F9', // Off White - texto primario
         },
-        // Acento: azul claro.
+        // Acento de marca.
         accent: {
-          700: '#1668B8',
-          600: '#1E7FD6',
-          500: '#3A98EA',
-          400: '#5FB0F2',
-          300: '#8FC9F8',
-          200: '#C2E2FC',
+          700: '#1B5FBF',
+          600: '#2F80ED', // Tech Blue - boton primario
+          500: '#3D8FF5',
+          400: '#4DA3FF', // Electric Blue - enlaces e iconos
+          300: '#7FBEFF',
+          200: '#B3D9FF',
         },
         state: {
-          success: '#4ADE80',
-          danger: '#F87171',
+          success: '#34D399',
+          danger: '#FB7185',
           warning: '#FBBF24',
         },
       },
       borderRadius: {
-        card: '20px',
         field: '14px',
+        card: '20px',
+        sheet: '28px',
+        pill: '9999px',
       },
     },
   },

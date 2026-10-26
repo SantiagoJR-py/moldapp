@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
@@ -67,9 +68,7 @@ function RegisterScreen() {
     void catalogService.identificationTypes().then((types) => {
       if (!active) return;
 
-      setOptions(
-        types.map((type) => ({ value: type.id, label: type.name ?? `Tipo ${type.id}` })),
-      );
+      setOptions(types.map((type) => ({ value: type.id, label: type.name ?? `Tipo ${type.id}` })));
     });
 
     return () => {
@@ -133,9 +132,10 @@ function RegisterScreen() {
             <View className="gap-5">
               <Banner tone="success" message="Tu cuenta quedó creada correctamente." />
               <Text className="text-sm leading-5 text-steel-400">
-                Ya puedes iniciar sesión desde la aplicación móvil de MoldApp con el correo{' '}
+                Ya puedes iniciar sesión aquí o en la aplicación móvil de ENTRYX con el correo{' '}
                 <Text className="text-steel-200">{email.trim().toLowerCase()}</Text>.
               </Text>
+              <Button label="Iniciar sesión" onPress={() => router.replace('/login')} />
               <LinkButton label="Registrar otra cuenta" onPress={reset} />
             </View>
           </Card>
@@ -249,9 +249,10 @@ function RegisterScreen() {
           </View>
         </Card>
 
-        <Text className="text-center text-xs leading-5 text-steel-500">
-          El inicio de sesión y la recuperación de contraseña están disponibles en la app móvil.
-        </Text>
+        <LinkButton
+          label="¿Ya tienes cuenta? Iniciar sesión"
+          onPress={() => router.push('/login')}
+        />
       </View>
     </AuthScreen>
   );

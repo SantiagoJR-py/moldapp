@@ -2,17 +2,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { MAX_FORM_WIDTH, palette } from '@/constants/theme';
+import { MAX_FORM_WIDTH, motion, palette, radius, shadows } from '@/constants/theme';
+import { ShaderBackground } from './shader-background';
 
 type AuthScreenProps = {
   children: ReactNode;
 };
 
 /**
- * Fondo y contenedor comunes a las cuatro pantallas de autenticación.
- * En web el contenido se limita a `MAX_FORM_WIDTH` para no estirarse.
+ * Fondo y contenedor comunes a las cuatro pantallas de autenticacion.
+ *
+ * El shader ocupa la mitad superior y se funde con el obsidiana mediante un
+ * degradado: asi la marca se apoya en algo vivo sin que el formulario compita
+ * con el movimiento detras. Se deja fuera de la zona privada a proposito
+ * porque es lo mas caro de dibujar de toda la app.
  */
 export function AuthScreen({ children }: AuthScreenProps) {
   const insets = useSafeAreaInsets();
@@ -20,13 +26,24 @@ export function AuthScreen({ children }: AuthScreenProps) {
   return (
     <View className="flex-1 bg-ink-950">
       <StatusBar style="light" />
-      <LinearGradient
-        colors={[palette.accent700, 'transparent']}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320, opacity: 0.18 }}
-        pointerEvents="none"
-      />
+
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '58%' }}>
+        <ShaderBackground intensity={0.19} />
+        {/* Difumina el borde inferior del shader contra el fondo de la app. */}
+        <LinearGradient
+          colors={['transparent', 'rgba(8,12,18,0.72)', palette.ink950]}
+          locations={[0, 0.62, 1]}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+            pointerEvents: 'none',
+          }}
+        />
+      </View>
+
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -37,14 +54,17 @@ export function AuthScreen({ children }: AuthScreenProps) {
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: 'center',
-            paddingHorizontal: 24,
+            paddingHorizontal: 20,
             paddingTop: insets.top + 32,
             paddingBottom: insets.bottom + 32,
           }}
         >
-          <View className="w-full self-center" style={{ maxWidth: MAX_FORM_WIDTH }}>
+          <Animated.View
+            entering={FadeIn.duration(motion.slow)}
+            style={{ width: '100%', alignSelf: 'center', maxWidth: MAX_FORM_WIDTH }}
+          >
             {children}
-          </View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -55,8 +75,22 @@ type CardProps = {
   children: ReactNode;
 };
 
+/** Tarjeta de vidrio: borde fino, fondo casi opaco y sombra de elevacion. */
 export function Card({ children }: CardProps) {
   return (
-    <View className="rounded-card border border-ink-600 bg-ink-900/90 p-6">{children}</View>
+    <Animated.View
+      entering={FadeInDown.duration(motion.slow).springify().damping(18)}
+      style={{
+        borderRadius: radius.card,
+        borderCurve: 'continuous',
+        borderWidth: 1,
+        borderColor: palette.ink700,
+        backgroundColor: 'rgba(13, 27, 42, 0.92)',
+        padding: 24,
+        boxShadow: shadows.overlay,
+      }}
+    >
+      {children}
+    </Animated.View>
   );
 }

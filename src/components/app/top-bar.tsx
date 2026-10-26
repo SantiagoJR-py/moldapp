@@ -1,74 +1,50 @@
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { MenuIcon } from '@/components/ui/icons';
-import { roleLabel } from '@/constants/roles';
+import { Isotype, Wordmark } from '@/components/brand/logo';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import { palette } from '@/constants/theme';
 import { useSession } from '@/context/session';
 import { Avatar } from './avatar';
 
-type TopBarProps = {
-  onOpenMenu: () => void;
-  showMenuButton: boolean;
-};
-
-/** Barra superior con la identidad del usuario: foto, nombre, rol y estado. */
-export function TopBar({ onOpenMenu, showMenuButton }: TopBarProps) {
+/**
+ * Barra superior del celular: la marca y el acceso al perfil. Cada pantalla pone su propio
+ * título grande debajo, como en iOS; la navegación va abajo, en las pestañas.
+ */
+export function TopBar() {
   const insets = useSafeAreaInsets();
   const { user } = useSession();
 
-  const enabled = user?.state === 'ENABLED';
-
   return (
     <View
-      className="flex-row items-center gap-3 border-b border-ink-700 bg-ink-900/95 px-4 pb-3"
-      style={{ paddingTop: insets.top + 12 }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottomWidth: 1,
+        borderBottomColor: palette.ink700,
+        backgroundColor: palette.ink900,
+        paddingHorizontal: 16,
+        paddingBottom: 10,
+        paddingTop: insets.top + 10,
+      }}
     >
-      {showMenuButton ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Abrir menú"
-          hitSlop={8}
-          onPress={onOpenMenu}
-          className="h-10 w-10 items-center justify-center rounded-field border border-ink-600 bg-ink-800 active:opacity-70"
-        >
-          <MenuIcon size={20} />
-        </Pressable>
-      ) : null}
+      <View className="flex-row items-center gap-2.5">
+        <Isotype size={28} />
+        <Wordmark size="sm" />
+      </View>
 
       {user ? (
-        <Pressable
-          accessibilityRole="button"
+        <PressableScale
           accessibilityLabel="Ir a mi perfil"
+          depth={0.9}
           onPress={() => router.navigate('/profile')}
-          className="flex-1 flex-row items-center gap-3 active:opacity-70"
+          style={{ height: 44, width: 44, alignItems: 'center', justifyContent: 'center' }}
         >
-          <Avatar fullName={user.fullName} urlImage={user.urlImage} size={42} />
-
-          <View className="flex-1">
-            <Text numberOfLines={1} className="text-base font-semibold text-white">
-              {user.fullName}
-            </Text>
-
-            <View className="mt-1 flex-row items-center gap-2">
-              <View className="rounded-full border border-accent-500/40 bg-accent-500/10 px-2 py-0.5">
-                <Text className="text-[11px] text-accent-300">{roleLabel(user.role?.name)}</Text>
-              </View>
-
-              <View className="flex-row items-center gap-1.5">
-                <View
-                  className={`h-1.5 w-1.5 rounded-full ${enabled ? 'bg-state-success' : 'bg-state-warning'}`}
-                />
-                <Text className="text-[11px] text-steel-500">
-                  {enabled ? 'Activo' : 'Inactivo'}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      ) : (
-        <View className="flex-1" />
-      )}
+          <Avatar fullName={user.fullName} urlImage={user.urlImage} size={34} />
+        </PressableScale>
+      ) : null}
     </View>
   );
 }

@@ -30,17 +30,19 @@ type RequestOptions = {
   body?: unknown;
   /** Adjunta el token de la sesión activa. */
   auth?: boolean;
+  /** Para subidas grandes (videos) que tardan más que una petición normal. */
+  timeoutMs?: number;
 };
 
 /** `path` es absoluto desde la raíz del API, por ejemplo `/app/user/login`. */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, auth = false } = options;
+  const { method = 'GET', body, auth = false, timeoutMs = TIMEOUT_MS } = options;
 
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
   const token = auth ? getAuthToken() : null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
 

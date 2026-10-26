@@ -1,14 +1,17 @@
-import { Redirect, Slot } from 'expo-router';
+import { Redirect, Slot, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { AppShell } from '@/components/app/app-shell';
-import { palette } from '@/constants/theme';
+import { LoadingScreen } from '@/components/ui/loading-screen';
+import { motion } from '@/constants/theme';
+import { GateAlertsProvider } from '@/context/gate-alerts';
 import { useSession } from '@/context/session';
 import { entryRoute } from '@/lib/surface';
 
 export default function AppLayout() {
   const { user, loading, refreshProfile } = useSession();
+  const pathname = usePathname();
   const refreshed = useRef(false);
 
   // El usuario guardado puede estar desactualizado (rol, foto, estado). La sesión
@@ -21,11 +24,7 @@ export default function AppLayout() {
   }, [loading, user, refreshProfile]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-ink-950">
-        <ActivityIndicator color={palette.accent400} />
-      </View>
-    );
+    return <LoadingScreen message="Comprobando tu sesión…" />;
   }
 
   if (!user) {
@@ -33,8 +32,18 @@ export default function AppLayout() {
   }
 
   return (
-    <AppShell>
-      <Slot />
-    </AppShell>
+    <GateAlertsProvider>
+      <AppShell>
+        {/*
+        La navegación de esta zona es el cajón lateral, no una pila, así que
+        `Slot` cambia el contenido de golpe y sin transición. La clave por ruta
+        hace que cada pantalla se monte de nuevo y entre con un fundido: el
+        salto seco es de lo que más delata a una app que no está terminada.
+      */}
+        <Animated.View key={pathname} entering={FadeIn.duration(motion.base)} style={{ flex: 1 }}>
+          <Slot />
+        </Animated.View>
+      </AppShell>
+    </GateAlertsProvider>
   );
 }

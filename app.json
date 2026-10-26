@@ -1,23 +1,23 @@
 {
   "expo": {
-    "name": "MoldApp",
-    "slug": "moldapp",
+    "name": "ENTRYX",
+    "slug": "entryx",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "moldapp",
+    "icon": "./assets/images/isotipo.png",
+    "scheme": "entryx",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#080B10",
+    "backgroundColor": "#080C12",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moldapp.app"
+      "bundleIdentifier": "com.entryx.app"
     },
     "android": {
-      "package": "com.moldapp.app",
+      "package": "com.entryx.app",
       "adaptiveIcon": {
-        "backgroundColor": "#080B10",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#080C12",
+        "foregroundImage": "./assets/images/entryx-mark-padded.png",
+        "monochromeImage": "./assets/images/entryx-mark-padded.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -33,9 +33,24 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#080B10",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 96
+          "backgroundColor": "#080C12",
+          "image": "./assets/images/entryx-mark.png",
+          "imageWidth": 128
+        }
+      ],
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ENTRYX usa la cámara para leer la tarjeta de propiedad de tu vehículo y, en portería, las placas de los vehículos que llegan. Las fotos no se guardan.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
         }
       ]
     ],

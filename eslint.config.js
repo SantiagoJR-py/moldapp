@@ -6,4 +6,12 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*', '.expo/*', 'node_modules/*'],
   },
+  {
+    // Sin esto el plugin de imports no entiende los alias `@/` de tsconfig.json.
+    settings: {
+      'import/resolver': {
+        typescript: { project: './tsconfig.json' },
+      },
+    },
+  },
 ]);

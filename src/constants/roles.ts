@@ -19,6 +19,11 @@ const ROLE_LABELS: Record<string, string> = {
   [RoleName.EXTERNAL_PERSONS]: 'Persona externa',
 };
 
+/** Portería y Administración: ven las cámaras, las alertas y el historial de accesos. */
+export function isGateRole(name: string | undefined): boolean {
+  return name === RoleName.WARDEN || name === RoleName.ADMINISTRATIVE_STAFF;
+}
+
 export function roleLabel(name: string | undefined): string {
   if (!name) return 'Sin rol';
   return ROLE_LABELS[name] ?? name;

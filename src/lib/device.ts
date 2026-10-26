@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 
 import { storage } from './storage';
 
-const FINGERPRINT_KEY = 'moldapp.fingerprint';
+const FINGERPRINT_KEY = 'entryx.fingerprint';
 
 /**
  * Datos que el backend guarda en `sessions` (userAgent, browser, ip, device, os,
@@ -36,7 +36,7 @@ function userAgent(): string {
     return navigator.userAgent;
   }
 
-  return `MoldApp/${Platform.OS} ${Device.osName ?? ''} ${Device.osVersion ?? ''}`.trim();
+  return `ENTRYX/${Platform.OS} ${Device.osName ?? ''} ${Device.osVersion ?? ''}`.trim();
 }
 
 /** Identificador estable por instalación; no es un dato de seguridad, solo correlaciona sesiones. */

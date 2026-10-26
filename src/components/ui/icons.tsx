@@ -10,13 +10,7 @@ type IconProps = {
 function Line({ size = 20, color = palette.steel300, d }: IconProps & { d: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d={d}
-        stroke={color}
-        strokeWidth={1.7}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Path d={d} stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -26,24 +20,31 @@ export function MailIcon(props: IconProps) {
 }
 
 export function LockIcon(props: IconProps) {
-  return <Line {...props} d="M6.5 10.5h11v9h-11zM8.75 10.5V7.75a3.25 3.25 0 0 1 6.5 0v2.75M12 14v2.5" />;
+  return (
+    <Line {...props} d="M6.5 10.5h11v9h-11zM8.75 10.5V7.75a3.25 3.25 0 0 1 6.5 0v2.75M12 14v2.5" />
+  );
 }
 
 export function UserIcon(props: IconProps) {
-  return <Line {...props} d="M12 12a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5ZM4.5 20c0-3.5 3.36-5.5 7.5-5.5s7.5 2 7.5 5.5" />;
-}
-
-export function IdIcon(props: IconProps) {
-  return <Line {...props} d="M3.5 5.5h17v13h-17zM9 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5.8 16c.5-1.7 1.8-2.5 3.2-2.5s2.7.8 3.2 2.5M14.5 10h4M14.5 13.5h4" />;
-}
-
-export function PhoneIcon(props: IconProps) {
   return (
     <Line
       {...props}
-      d="M7.5 3.5h9v17h-9zM10.5 17.8h3"
+      d="M12 12a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5ZM4.5 20c0-3.5 3.36-5.5 7.5-5.5s7.5 2 7.5 5.5"
     />
   );
+}
+
+export function IdIcon(props: IconProps) {
+  return (
+    <Line
+      {...props}
+      d="M3.5 5.5h17v13h-17zM9 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5.8 16c.5-1.7 1.8-2.5 3.2-2.5s2.7.8 3.2 2.5M14.5 10h4M14.5 13.5h4"
+    />
+  );
+}
+
+export function PhoneIcon(props: IconProps) {
+  return <Line {...props} d="M7.5 3.5h9v17h-9zM10.5 17.8h3" />;
 }
 
 export function ArrowLeftIcon(props: IconProps) {
@@ -76,12 +77,7 @@ export function CarIcon(props: IconProps) {
 }
 
 export function ClipboardIcon(props: IconProps) {
-  return (
-    <Line
-      {...props}
-      d="M9 4.5h6v2.5H9zM7 6h-2v14h14V6h-2M8.5 11h7M8.5 14.5h7M8.5 18h4"
-    />
-  );
+  return <Line {...props} d="M9 4.5h6v2.5H9zM7 6h-2v14h14V6h-2M8.5 11h7M8.5 14.5h7M8.5 18h4" />;
 }
 
 export function UsersIcon(props: IconProps) {
@@ -94,7 +90,9 @@ export function UsersIcon(props: IconProps) {
 }
 
 export function ShieldIcon(props: IconProps) {
-  return <Line {...props} d="M12 3.5 5 6v6c0 4 3 6.8 7 8.5 4-1.7 7-4.5 7-8.5V6zM9 12l2.2 2.2L15.2 10" />;
+  return (
+    <Line {...props} d="M12 3.5 5 6v6c0 4 3 6.8 7 8.5 4-1.7 7-4.5 7-8.5V6zM9 12l2.2 2.2L15.2 10" />
+  );
 }
 
 export function LogoutIcon(props: IconProps) {
@@ -134,6 +132,10 @@ export function ChevronRightIcon(props: IconProps) {
   return <Line {...props} d="m9.5 5.5 6.5 6.5-6.5 6.5" />;
 }
 
+export function ChevronDownIcon(props: IconProps) {
+  return <Line {...props} d="m5.5 9.5 6.5 6.5 6.5-6.5" />;
+}
+
 export function EyeIcon({ size = 20, color = palette.steel400 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -160,4 +162,48 @@ export function EyeOffIcon({ size = 20, color = palette.steel400 }: IconProps) {
       />
     </Svg>
   );
+}
+
+/** Flecha que entra por una puerta: ingreso a la institución. */
+export function EntryIcon(props: IconProps) {
+  return <Line {...props} d="M3.5 12h10M9.5 8l4 4-4 4M16.5 4.5h3.5v15h-3.5" />;
+}
+
+/** Flecha que sale por una puerta: salida de la institución. */
+export function ExitIcon(props: IconProps) {
+  return <Line {...props} d="M10 12h10.5M16.5 8l4 4-4 4M7.5 4.5H4v15h3.5" />;
+}
+
+/** Flecha que sube desde una bandeja: subir un archivo. */
+export function UploadIcon(props: IconProps) {
+  return <Line {...props} d="M12 15V4.5M7.5 9 12 4.5 16.5 9M4.5 14.5v5h15v-5" />;
+}
+
+/** Cámara de video: el monitor en vivo de portería. */
+export function VideoIcon(props: IconProps) {
+  return <Line {...props} d="M3.5 7h11.5v10H3.5zM15 10.5l5.5-3v9l-5.5-3" />;
+}
+
+export function BellIcon(props: IconProps) {
+  return <Line {...props} d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15zM10 20.5a2.2 2.2 0 0 0 4 0" />;
+}
+
+/** Esquinas de visor: apuntar la cámara del equipo a una placa. */
+export function ScanIcon(props: IconProps) {
+  return <Line {...props} d="M4 8.5V4h4.5M15.5 4H20v4.5M20 15.5V20h-4.5M8.5 20H4v-4.5M7.5 12h9" />;
+}
+
+/** Tarjeta de propiedad del vehículo. */
+export function CardIcon(props: IconProps) {
+  return <Line {...props} d="M3.5 6h17v12h-17zM3.5 9.5h17M6.5 13.5h5M6.5 15.5h3M15 13.5h2.5" />;
+}
+
+/** Controles deslizantes: ajustes de una cámara. */
+export function SlidersIcon(props: IconProps) {
+  return <Line {...props} d="M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4" />;
+}
+
+/** Flecha que vuelve: restaurar algo quitado. */
+export function RestoreIcon(props: IconProps) {
+  return <Line {...props} d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4h4" />;
 }

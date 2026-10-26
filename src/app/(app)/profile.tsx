@@ -1,23 +1,55 @@
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/app/avatar';
 import { Banner } from '@/components/ui/banner';
 import { Button } from '@/components/ui/button';
-import { CameraIcon, IdIcon, MailIcon, PhoneIcon, ShieldIcon, UserIcon } from '@/components/ui/icons';
+import {
+  CameraIcon,
+  IdIcon,
+  LogoutIcon,
+  MailIcon,
+  PhoneIcon,
+  ShieldIcon,
+  UserIcon,
+} from '@/components/ui/icons';
+import { PressableScale } from '@/components/ui/pressable-scale';
 import { TextField } from '@/components/ui/text-field';
 import { roleLabel } from '@/constants/roles';
-import { palette } from '@/constants/theme';
+import { motion, palette, radius, shadows } from '@/constants/theme';
 import { useSession } from '@/context/session';
 import { apiMessage } from '@/lib/api-messages';
+import { entryRoute } from '@/lib/surface';
 import { validateEmail, validateFullName, validatePhone } from '@/lib/validation';
 import { profileService } from '@/services/profile.service';
 
+/** Entrada escalonada, igual que en el inicio, para que la app se sienta una sola. */
+function enter(index: number) {
+  return FadeInDown.duration(motion.slow)
+    .delay(index * 70)
+    .springify()
+    .damping(20);
+}
+
+/** Tarjeta de seccion. Se repite dos veces en esta pantalla. */
+const sectionCard = {
+  gap: 20,
+  borderRadius: radius.card,
+  borderCurve: 'continuous',
+  borderWidth: 1,
+  borderColor: palette.ink700,
+  backgroundColor: palette.ink900,
+  padding: 20,
+  boxShadow: shadows.card,
+} as const;
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, setUser } = useSession();
+  const { user, setUser, signOut } = useSession();
 
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -118,37 +150,52 @@ export default function ProfileScreen() {
       className="flex-1"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 32, gap: 20 }}
+      contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 22 }}
     >
-      <View className="items-center gap-3">
+      <Animated.View entering={enter(0)} style={{ alignItems: 'center', gap: 12 }}>
         <View>
-          <Avatar fullName={user.fullName} urlImage={user.urlImage} size={96} />
+          <Avatar fullName={user.fullName} urlImage={user.urlImage} size={104} />
 
-          <Pressable
-            accessibilityRole="button"
+          <PressableScale
             accessibilityLabel="Cambiar foto de perfil"
             disabled={uploading}
+            depth={0.9}
             onPress={() => void onPickPhoto()}
-            className="absolute -bottom-1 -right-1 h-9 w-9 items-center justify-center rounded-full border-2 border-ink-950 bg-accent-600 active:opacity-80"
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              height: 36,
+              width: 36,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 18,
+              borderWidth: 2,
+              borderColor: palette.ink950,
+              backgroundColor: palette.accent600,
+              boxShadow: shadows.accent,
+            }}
           >
             {uploading ? (
               <ActivityIndicator size="small" color={palette.white} />
             ) : (
               <CameraIcon size={17} color={palette.white} />
             )}
-          </Pressable>
+          </PressableScale>
         </View>
 
-        <Text className="text-lg font-semibold text-white">{user.fullName}</Text>
-        <View className="rounded-full border border-accent-500/40 bg-accent-500/10 px-3 py-1">
-          <Text className="text-xs text-accent-300">{roleLabel(user.role?.name)}</Text>
+        <Text className="mt-1 text-center text-xl font-semibold text-steel-100">
+          {user.fullName}
+        </Text>
+        <View className="self-center rounded-pill border border-accent-500/40 bg-accent-500/10 px-3 py-1">
+          <Text className="text-xs font-medium text-accent-300">{roleLabel(user.role?.name)}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {feedback ? <Banner tone={feedback.tone} message={feedback.message} /> : null}
 
-      <View className="gap-5 rounded-card border border-ink-600 bg-ink-900 p-5">
-        <Text className="text-xs font-medium uppercase tracking-wider text-steel-500">
+      <Animated.View entering={enter(1)} style={sectionCard}>
+        <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
           Datos que puedes editar
         </Text>
 
@@ -188,10 +235,10 @@ export default function ProfileScreen() {
           disabled={!dirty}
           onPress={() => void onSave()}
         />
-      </View>
+      </Animated.View>
 
-      <View className="gap-4 rounded-card border border-ink-600 bg-ink-900 p-5">
-        <Text className="text-xs font-medium uppercase tracking-wider text-steel-500">
+      <Animated.View entering={enter(2)} style={[sectionCard, { gap: 14 }]}>
+        <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
           Datos administrados por la institución
         </Text>
 
@@ -214,7 +261,30 @@ export default function ProfileScreen() {
         <Text className="text-xs leading-5 text-steel-500">
           Para corregir estos datos escribe al área administrativa.
         </Text>
-      </View>
+      </Animated.View>
+
+      {/* En el celular no hay menú lateral: cerrar sesión vive aquí. */}
+      <Animated.View entering={enter(3)}>
+        <PressableScale
+          accessibilityLabel="Cerrar sesión"
+          onPress={() => void signOut().then(() => router.replace(entryRoute))}
+          style={{
+            height: 52,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            borderRadius: radius.field,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            borderColor: 'rgba(251, 113, 133, 0.38)',
+            backgroundColor: 'rgba(251, 113, 133, 0.08)',
+          }}
+        >
+          <LogoutIcon size={19} color={palette.danger} />
+          <Text className="text-base font-semibold text-state-danger">Cerrar sesión</Text>
+        </PressableScale>
+      </Animated.View>
     </ScrollView>
   );
 }
@@ -229,10 +299,23 @@ function ReadOnlyRow({
   value: string;
 }) {
   return (
-    <View className="flex-row items-center gap-3 rounded-field border border-ink-700 bg-ink-800 px-4 py-3">
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderRadius: radius.field,
+        borderCurve: 'continuous',
+        borderWidth: 1,
+        borderColor: palette.ink700,
+        backgroundColor: palette.ink800,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      }}
+    >
       {icon}
       <View className="flex-1">
-        <Text className="text-[11px] uppercase tracking-wider text-steel-500">{label}</Text>
+        <Text className="text-[11px] uppercase tracking-widest text-steel-500">{label}</Text>
         <Text className="mt-0.5 text-sm text-steel-200">{value}</Text>
       </View>
     </View>

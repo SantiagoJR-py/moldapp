@@ -1,133 +1,200 @@
+import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Banner } from '@/components/ui/banner';
 import { Button } from '@/components/ui/button';
-import { CarIcon, IdIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/ui/icons';
-import { SelectField, type SelectOption } from '@/components/ui/select-field';
-import { TextField } from '@/components/ui/text-field';
-import { palette } from '@/constants/theme';
+import { CarIcon, PencilIcon, PlusIcon, TrashIcon } from '@/components/ui/icons';
+import { PressableScale } from '@/components/ui/pressable-scale';
+import {
+  draftFromProposal,
+  EMPTY_DRAFT,
+  hasErrors,
+  inputFromDraft,
+  ScanCardButton,
+  scanCardFromLibrary,
+  UNREADABLE_CARD,
+  validateDraft,
+  VehicleFields,
+  type Draft,
+  type FormErrors,
+} from '@/components/vehicles/vehicle-fields';
+import { motion, palette, radius, shadows } from '@/constants/theme';
 import { apiMessage } from '@/lib/api-messages';
-import { normalizePlate, validateModelYear, validatePlate } from '@/lib/validation';
+import { clearScan, peekScan } from '@/lib/scan-store';
+import { currentSurface } from '@/lib/surface';
 import {
   vehicleService,
+  type ScanResult,
   type Vehicle,
   type VehicleBrand,
 } from '@/services/vehicle.service';
 
-type Feedback = { tone: 'success' | 'error'; message: string };
+type Feedback = { tone: 'success' | 'error' | 'info'; message: string };
 
-type FormErrors = {
-  plate?: string | null;
-  brand?: string | null;
-  version?: string | null;
-  model?: string | null;
-};
+/**
+ * Las filas se reacomodan solas al agregar o borrar en vez de saltar. Es la
+ * animacion que mas hace por la sensacion de calidad en una lista.
+ */
+const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
+
+/** Tarjeta base de la lista y del formulario. */
+const card = {
+  borderRadius: radius.card,
+  borderCurve: 'continuous',
+  borderWidth: 1,
+  borderColor: palette.ink700,
+  backgroundColor: palette.ink900,
+  boxShadow: shadows.card,
+} as const;
 
 /** `null` = formulario cerrado, `'new'` = alta, número = edición de ese vehículo. */
 type FormTarget = null | 'new' | number;
 
 export default function VehiclesScreen() {
   const insets = useSafeAreaInsets();
+  // Al volver de la cámara (celular) la tarjeta ya leída abre el formulario lleno.
+  const [returned] = useState(() => peekScan('vehicles'));
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [brands, setBrands] = useState<VehicleBrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
 
-  const [target, setTarget] = useState<FormTarget>(null);
-  const [plate, setPlate] = useState('');
-  const [brandId, setBrandId] = useState<number | null>(null);
-  const [versionId, setVersionId] = useState<number | null>(null);
-  const [model, setModel] = useState('');
+  const [target, setTarget] = useState<FormTarget>(returned ? 'new' : null);
+  const [draft, setDraft] = useState<Draft>(() =>
+    returned ? draftFromProposal(returned.proposal) : EMPTY_DRAFT,
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
+
+  // Lo que vino de la tarjeta de propiedad: campos por revisar y placa ya registrada.
+  const [review, setReview] = useState<Set<string>>(() => new Set(returned?.review ?? []));
+  const [plateTaken, setPlateTaken] = useState(Boolean(returned?.plateTaken));
+  const [fromCard, setFromCard] = useState(Boolean(returned));
+  const [scanning, setScanning] = useState(false);
 
   const [confirmingDelete, setConfirmingDelete] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const [mine, catalog] = await Promise.all([
-        vehicleService.mine(),
-        vehicleService.brands(),
-      ]);
-
-      setVehicles(mine);
-      setBrands(catalog);
-    } catch (error) {
-      setFeedback({
-        tone: 'error',
-        message: apiMessage(error, 'No pudimos cargar tus vehículos.'),
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    () =>
+      Promise.all([vehicleService.mine(), vehicleService.brands()])
+        .then(([mine, catalog]) => {
+          setVehicles(mine);
+          setBrands(catalog);
+        })
+        .catch((error: unknown) => {
+          setFeedback({
+            tone: 'error',
+            message: apiMessage(error, 'No pudimos cargar tus vehículos.'),
+          });
+        })
+        .finally(() => setLoading(false)),
+    [],
+  );
 
   useEffect(() => {
+    clearScan('vehicles');
     void load();
   }, [load]);
 
-  const brandOptions: SelectOption[] = brands.map((brand) => ({
-    value: brand.id,
-    label: brand.name ?? `Marca ${brand.id}`,
-  }));
+  const applyScan = useCallback((result: ScanResult) => {
+    if (!result.readable) {
+      setFeedback({ tone: 'error', message: UNREADABLE_CARD });
+      return;
+    }
 
-  const versionOptions: SelectOption[] = (
-    brands.find((brand) => brand.id === brandId)?.versions ?? []
-  ).map((version) => ({
-    value: version.id,
-    label: version.name ?? `Versión ${version.id}`,
-  }));
+    setConfirmingDelete(null);
+    setDraft(draftFromProposal(result.proposal));
+    setReview(new Set(result.review));
+    setPlateTaken(result.plateTaken);
+    setFromCard(true);
+    setErrors({});
+    setFeedback(null);
+    setTarget('new');
+  }, []);
+
+  function update(changes: Partial<Draft>, reviewed: string[]) {
+    setDraft((current) => ({ ...current, ...changes }));
+    // Si la persona tocó el dato, ya lo revisó.
+    setReview((current) => {
+      const next = new Set(current);
+      reviewed.forEach((name) => next.delete(name));
+      return next;
+    });
+  }
 
   function closeForm() {
     setTarget(null);
     setErrors({});
+    setReview(new Set());
+    setPlateTaken(false);
+    setFromCard(false);
   }
 
   function openCreate() {
     setFeedback(null);
     setConfirmingDelete(null);
-    setPlate('');
-    setBrandId(null);
-    setVersionId(null);
-    setModel('');
+    setDraft(EMPTY_DRAFT);
     setErrors({});
+    setReview(new Set());
+    setPlateTaken(false);
+    setFromCard(false);
     setTarget('new');
   }
 
   function openEdit(vehicle: Vehicle) {
     setFeedback(null);
     setConfirmingDelete(null);
-    setPlate(vehicle.licensePlateNumber);
-    setBrandId(vehicle.brandId);
-    setVersionId(vehicle.versionId);
-    setModel(String(vehicle.model));
+    setDraft({
+      plate: vehicle.licensePlateNumber,
+      brandId: vehicle.brandId,
+      brandName: '',
+      versionId: vehicle.versionId,
+      lineName: '',
+      model: String(vehicle.model),
+      color: vehicle.color ?? '',
+      vehicleClass: vehicle.vehicleClass,
+    });
     setErrors({});
+    setReview(new Set());
+    setPlateTaken(false);
+    setFromCard(false);
     setTarget(vehicle.id);
   }
 
+  async function scanCard() {
+    // En el celular se usa la cámara con marco guía; en web se elige la foto.
+    if (currentSurface === 'mobile') {
+      router.push('/scan-card');
+      return;
+    }
+
+    setFeedback(null);
+    setScanning(true);
+
+    try {
+      const result = await scanCardFromLibrary();
+      if (result) applyScan(result);
+    } catch (error) {
+      setFeedback({ tone: 'error', message: (error as Error).message });
+    } finally {
+      setScanning(false);
+    }
+  }
+
   async function onSubmit() {
-    const nextErrors: FormErrors = {
-      plate: validatePlate(plate),
-      brand: brandId ? null : 'Elige la marca.',
-      version: versionId ? null : 'Elige la versión.',
-      model: validateModelYear(model),
-    };
+    const nextErrors = validateDraft(draft);
 
     setErrors(nextErrors);
     setFeedback(null);
 
-    if (nextErrors.plate || nextErrors.brand || nextErrors.version || nextErrors.model) return;
+    if (hasErrors(nextErrors)) return;
 
-    const input = {
-      licensePlateNumber: normalizePlate(plate),
-      brandId: brandId as number,
-      versionId: versionId as number,
-      model: Number(model.trim()),
-    };
+    const input = inputFromDraft(draft);
 
     setSaving(true);
 
@@ -136,6 +203,8 @@ export default function VehiclesScreen() {
         const created = await vehicleService.create(input);
         setVehicles((current) => [created, ...current]);
         setFeedback({ tone: 'success', message: 'Vehículo agregado.' });
+        // La marca o línea nueva ya quedó en el catálogo.
+        if (!input.brandId || !input.versionId) void load();
       } else if (typeof target === 'number') {
         const updated = await vehicleService.update(target, input);
         setVehicles((current) =>
@@ -177,8 +246,9 @@ export default function VehiclesScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center gap-3">
         <ActivityIndicator color={palette.accent400} />
+        <Text className="text-sm text-steel-500">Cargando tus vehículos…</Text>
       </View>
     );
   }
@@ -188,110 +258,128 @@ export default function VehiclesScreen() {
       className="flex-1"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 32, gap: 20 }}
+      contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <View className="gap-1">
-        <Text className="text-2xl font-semibold text-white">Mis vehículos</Text>
-        <Text className="text-sm text-steel-400">
+      <Animated.View
+        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
+        style={{ gap: 6 }}
+      >
+        <Text className="text-3xl font-bold tracking-tight text-steel-100">Mis vehículos</Text>
+        <Text className="text-sm leading-5 text-steel-400">
           Registra los vehículos con los que ingresas. Portería los usa para validar tu acceso.
         </Text>
-      </View>
+      </Animated.View>
 
       {feedback ? <Banner tone={feedback.tone} message={feedback.message} /> : null}
 
       {target === null ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={openCreate}
-          className="flex-row items-center justify-center gap-2 rounded-field border border-dashed border-ink-600 bg-ink-900 py-4 active:bg-ink-800"
-        >
-          <PlusIcon size={18} color={palette.accent300} />
-          <Text className="text-sm font-medium text-accent-300">Agregar vehículo</Text>
-        </Pressable>
+        <Animated.View entering={FadeIn.duration(motion.base)} layout={SETTLE} style={{ gap: 12 }}>
+          <ScanCardButton scanning={scanning} onPress={() => void scanCard()} />
+
+          <PressableScale
+            accessibilityLabel="Llenar los datos a mano"
+            disabled={scanning}
+            onPress={openCreate}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              borderRadius: radius.field,
+              borderCurve: 'continuous',
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: palette.ink600,
+              backgroundColor: palette.ink900,
+              paddingVertical: 15,
+            }}
+          >
+            <PlusIcon size={18} color={palette.accent400} />
+            <Text className="text-sm font-medium text-accent-400">Llenar a mano</Text>
+          </PressableScale>
+        </Animated.View>
       ) : (
-        <View className="gap-5 rounded-card border border-accent-500/30 bg-ink-900 p-5">
-          <Text className="text-xs font-medium uppercase tracking-wider text-steel-500">
-            {target === 'new' ? 'Nuevo vehículo' : 'Editar vehículo'}
+        <Animated.View
+          entering={FadeInDown.duration(motion.base).springify().damping(22)}
+          exiting={FadeOut.duration(motion.fast)}
+          layout={SETTLE}
+          style={[card, { gap: 20, borderColor: 'rgba(61, 143, 245, 0.32)', padding: 20 }]}
+        >
+          <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
+            {target !== 'new'
+              ? 'Editar vehículo'
+              : fromCard
+                ? 'Datos leídos de la tarjeta'
+                : 'Nuevo vehículo'}
           </Text>
 
-          <TextField
-            label="Placa"
-            value={plate}
-            onChangeText={(value) => setPlate(normalizePlate(value))}
-            error={errors.plate}
-            icon={<IdIcon />}
-            placeholder="ABC123"
-            autoCapitalize="characters"
-            autoCorrect={false}
-            maxLength={6}
-          />
+          {fromCard ? (
+            <Text className="text-sm leading-5 text-steel-300">
+              {review.size > 0
+                ? 'Revisa los datos marcados en amarillo: pueden estar mal leídos. Luego guarda.'
+                : 'Confirma que los datos coinciden con tu tarjeta y guarda.'}
+            </Text>
+          ) : null}
 
-          <SelectField
-            label="Marca"
-            placeholder="Elige la marca"
-            options={brandOptions}
-            value={brandId}
-            error={errors.brand}
-            icon={<CarIcon />}
-            onChange={(value) => {
-              setBrandId(value);
-              // Las versiones dependen de la marca; la anterior deja de ser válida.
-              setVersionId(null);
-            }}
-          />
+          {plateTaken ? (
+            <Banner tone="error" message="Esta placa ya está registrada en ENTRYX." />
+          ) : null}
 
-          <SelectField
-            label="Versión"
-            placeholder={brandId ? 'Elige la versión' : 'Elige primero la marca'}
-            options={versionOptions}
-            value={versionId}
-            error={errors.version}
-            icon={<CarIcon />}
-            onChange={setVersionId}
-          />
-
-          <TextField
-            label="Modelo"
-            value={model}
-            onChangeText={setModel}
-            error={errors.model}
-            placeholder={String(new Date().getFullYear())}
-            keyboardType="number-pad"
-            inputMode="numeric"
-            maxLength={4}
+          <VehicleFields
+            draft={draft}
+            errors={errors}
+            review={review}
+            brands={brands}
+            onChange={update}
           />
 
           <View className="gap-3">
             <Button
-              label={target === 'new' ? 'Agregar vehículo' : 'Guardar cambios'}
+              label={target === 'new' ? 'Guardar vehículo' : 'Guardar cambios'}
               loading={saving}
               onPress={() => void onSubmit()}
             />
             <Button label="Cancelar" variant="outline" disabled={saving} onPress={closeForm} />
           </View>
-        </View>
+        </Animated.View>
       )}
 
       {vehicles.length === 0 ? (
-        <View className="items-center gap-3 rounded-card border border-ink-600 bg-ink-900 px-5 py-10">
+        <Animated.View
+          entering={FadeIn.duration(motion.base)}
+          layout={SETTLE}
+          style={[
+            card,
+            { alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 40 },
+          ]}
+        >
           <CarIcon size={32} color={palette.steel500} />
           <Text className="text-center text-sm text-steel-400">
             Todavía no tienes vehículos registrados.
           </Text>
-        </View>
+        </Animated.View>
       ) : (
         <View className="gap-3">
-          {vehicles.map((vehicle) => (
-            <VehicleCard
+          {vehicles.map((vehicle, index) => (
+            <Animated.View
               key={vehicle.id}
-              vehicle={vehicle}
-              confirming={confirmingDelete === vehicle.id}
-              deleting={deleting === vehicle.id}
-              onEdit={() => openEdit(vehicle)}
-              onAskDelete={() => setConfirmingDelete(vehicle.id)}
-              onCancelDelete={() => setConfirmingDelete(null)}
-              onConfirmDelete={() => void onDelete(vehicle.id)}
-            />
+              entering={FadeInDown.duration(motion.base)
+                .delay(Math.min(index, 6) * 55)
+                .springify()
+                .damping(20)}
+              exiting={FadeOut.duration(motion.fast)}
+              layout={SETTLE}
+            >
+              <VehicleCard
+                vehicle={vehicle}
+                confirming={confirmingDelete === vehicle.id}
+                deleting={deleting === vehicle.id}
+                onEdit={() => openEdit(vehicle)}
+                onAskDelete={() => setConfirmingDelete(vehicle.id)}
+                onCancelDelete={() => setConfirmingDelete(null)}
+                onConfirmDelete={() => void onDelete(vehicle.id)}
+              />
+            </Animated.View>
           ))}
         </View>
       )}
@@ -319,79 +407,134 @@ function VehicleCard({
   onConfirmDelete,
 }: VehicleCardProps) {
   const description = [vehicle.brand?.name, vehicle.version?.name].filter(Boolean).join(' · ');
+  const details = [vehicle.vehicleClass, vehicle.color].filter(Boolean).join(' · ');
+
+  const iconButton = {
+    height: 38,
+    width: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.field,
+    borderCurve: 'continuous',
+    backgroundColor: palette.ink800,
+  } as const;
 
   return (
-    <View className="gap-4 rounded-card border border-ink-600 bg-ink-900 p-4">
+    <Animated.View layout={SETTLE} style={[card, { gap: 16, padding: 16 }]}>
       <View className="flex-row items-center gap-4">
-        <View className="h-11 w-11 items-center justify-center rounded-field bg-accent-500/10">
-          <CarIcon size={22} color={palette.accent300} />
+        <View
+          style={{
+            height: 46,
+            width: 46,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: radius.field,
+            borderCurve: 'continuous',
+            backgroundColor: 'rgba(47, 128, 237, 0.14)',
+          }}
+        >
+          <CarIcon size={22} color={palette.accent400} />
         </View>
 
         <View className="flex-1">
-          <Text className="text-base font-semibold tracking-wider text-white">
+          {/* La placa es el dato que se busca de un vistazo: va con el mayor peso. */}
+          <Text className="text-lg font-bold tracking-widest text-steel-100">
             {vehicle.licensePlateNumber}
           </Text>
           <Text className="mt-0.5 text-sm text-steel-400">
             {description || 'Sin marca registrada'} · {vehicle.model}
           </Text>
+          {details ? <Text className="mt-0.5 text-xs text-steel-500">{details}</Text> : null}
         </View>
 
         {confirming ? null : (
-          <View className="flex-row gap-1">
-            <Pressable
-              accessibilityRole="button"
+          <Animated.View
+            entering={FadeIn.duration(motion.fast)}
+            style={{ flexDirection: 'row', gap: 8 }}
+          >
+            <PressableScale
               accessibilityLabel={`Editar vehículo ${vehicle.licensePlateNumber}`}
-              hitSlop={6}
+              depth={0.9}
               onPress={onEdit}
-              className="h-9 w-9 items-center justify-center rounded-field active:bg-ink-800"
+              style={iconButton}
             >
-              <PencilIcon size={18} color={palette.steel400} />
-            </Pressable>
+              <PencilIcon size={18} color={palette.steel300} />
+            </PressableScale>
 
-            <Pressable
-              accessibilityRole="button"
+            <PressableScale
               accessibilityLabel={`Eliminar vehículo ${vehicle.licensePlateNumber}`}
-              hitSlop={6}
+              depth={0.9}
               onPress={onAskDelete}
-              className="h-9 w-9 items-center justify-center rounded-field active:bg-ink-800"
+              style={iconButton}
             >
-              <TrashIcon size={18} color={palette.steel400} />
-            </Pressable>
-          </View>
+              <TrashIcon size={18} color={palette.steel300} />
+            </PressableScale>
+          </Animated.View>
         )}
       </View>
 
       {confirming ? (
-        <View className="gap-3 rounded-field border border-state-danger/40 bg-state-danger/10 p-3">
+        <Animated.View
+          entering={FadeInDown.duration(motion.base).springify().damping(22)}
+          exiting={FadeOut.duration(motion.fast)}
+          style={{
+            gap: 12,
+            borderRadius: radius.field,
+            borderCurve: 'continuous',
+            borderWidth: 1,
+            borderColor: 'rgba(251, 113, 133, 0.38)',
+            backgroundColor: 'rgba(251, 113, 133, 0.10)',
+            padding: 14,
+          }}
+        >
           <Text className="text-sm text-steel-200">
             ¿Eliminar la placa {vehicle.licensePlateNumber}?
           </Text>
 
           <View className="flex-row gap-2">
-            <Pressable
-              accessibilityRole="button"
+            <PressableScale
+              accessibilityLabel={`Confirmar eliminación de ${vehicle.licensePlateNumber}`}
               disabled={deleting}
               onPress={onConfirmDelete}
-              className="h-10 flex-1 flex-row items-center justify-center rounded-field bg-state-danger active:opacity-80"
+              style={{
+                height: 44,
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: radius.field,
+                borderCurve: 'continuous',
+                backgroundColor: palette.danger,
+              }}
             >
               {deleting ? (
-                <ActivityIndicator size="small" color={palette.white} />
+                <ActivityIndicator size="small" color={palette.ink950} />
               ) : (
-                <Text className="text-sm font-semibold text-white">Eliminar</Text>
+                <Text className="text-sm font-semibold text-ink-950">Eliminar</Text>
               )}
-            </Pressable>
+            </PressableScale>
 
-            <Pressable
-              accessibilityRole="button"
+            <PressableScale
+              accessibilityLabel="Cancelar"
               disabled={deleting}
               onPress={onCancelDelete}
-              className="h-10 flex-1 items-center justify-center rounded-field border border-ink-600 bg-ink-800 active:opacity-80"
+              style={{
+                height: 44,
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: radius.field,
+                borderCurve: 'continuous',
+                borderWidth: 1,
+                borderColor: palette.ink600,
+                backgroundColor: palette.ink800,
+              }}
             >
               <Text className="text-sm font-medium text-steel-200">Cancelar</Text>
-            </Pressable>
+            </PressableScale>
           </View>
-        </View>
+        </Animated.View>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
