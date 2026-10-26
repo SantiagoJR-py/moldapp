@@ -23,7 +23,7 @@ export function TopBar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottomWidth: 1,
-        borderBottomColor: palette.ink700,
+        borderBottomColor: palette.hairline,
         backgroundColor: palette.ink900,
         paddingHorizontal: 16,
         paddingBottom: 10,

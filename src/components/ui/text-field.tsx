@@ -37,13 +37,13 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      [palette.ink800, 'rgba(20, 43, 66, 0.9)'],
+      [palette.ink900, 'rgba(13, 27, 42, 0.92)'],
     ),
   }));
 
   return (
     <View className="gap-2">
-      <Text className="text-xs font-medium uppercase tracking-wider text-steel-400">{label}</Text>
+      <Text className="text-[13px] font-medium text-steel-300">{label}</Text>
 
       <Animated.View
         style={[
@@ -63,7 +63,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
 
         <TextInput
           ref={ref}
-          placeholderTextColor={palette.steel500}
+          placeholderTextColor={palette.steel400}
           secureTextEntry={secure && !revealed}
           className="h-13 flex-1 text-base text-steel-100"
           // `outline-none` no aplica en RN; en web evita el contorno nativo del navegador.
@@ -94,7 +94,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
       {error ? (
         <Text className="text-xs text-state-danger">{error}</Text>
       ) : hint ? (
-        <Text className="text-xs text-steel-500">{hint}</Text>
+        <Text className="text-xs text-steel-400">{hint}</Text>
       ) : null}
     </View>
   );

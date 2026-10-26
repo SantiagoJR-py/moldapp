@@ -3,9 +3,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeInDown,
-  LinearTransition,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -29,7 +26,7 @@ import { AlertIcon, ArrowLeftIcon, InfoIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { Segmented } from '@/components/ui/segmented';
 import { GateOnly } from '@/components/gate-only';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { useSession } from '@/context/session';
 import { apiMessage } from '@/lib/api-messages';
@@ -40,6 +37,7 @@ import { currentSurface } from '@/lib/surface';
 import { plateDetectionService, type Detection } from '@/services/plate-detection.service';
 import { gateService, type PlateBox } from '@/services/gate.service';
 import type { PlateRead } from '@/services/plate-read.service';
+import { appear, settle } from '@/lib/motion';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 /** Windows reporta los AVI como `video/avi`; otros sistemas, como `video/x-msvideo`. */
@@ -64,8 +62,6 @@ const FRAME_INTERVAL_MS = 1000;
 const RETRY_MS = 2500;
 const TWO_COLUMN_MIN = 760;
 const LIVE_ITEMS = 8;
-
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
 
 type Mode = 'camera' | 'file';
 
@@ -150,17 +146,13 @@ function DetectionScreen() {
           </View>
         ) : null}
         {feed.reads.length === 0 && feed.status === 'live' ? (
-          <Text className="text-sm leading-5 text-steel-500">
+          <Text className="text-sm leading-5 text-steel-400">
             Lo que detectes aparecerá aquí y en entradas y salidas.
           </Text>
         ) : (
           <View style={{ gap: 2 }}>
             {feed.reads.slice(0, LIVE_ITEMS).map((read) => (
-              <Animated.View
-                key={read.id}
-                entering={FadeInDown.duration(motion.base)}
-                layout={SETTLE}
-              >
+              <Animated.View key={read.id} entering={appear} layout={settle}>
                 <ReadRow read={read} />
               </Animated.View>
             ))}
@@ -192,10 +184,7 @@ function DetectionScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
-        style={{ gap: 8 }}
-      >
+      <Animated.View entering={appear} style={{ gap: 8 }}>
         <PressableScale
           accessibilityLabel="Volver a las cámaras"
           depth={0.95}
@@ -212,7 +201,7 @@ function DetectionScreen() {
           <Text className="text-sm font-medium text-accent-400">En vivo</Text>
         </PressableScale>
         <Text className="text-3xl font-bold tracking-tight text-steel-100">Detección manual</Text>
-        <Text className="text-sm leading-5 text-steel-400">
+        <Text className="text-sm leading-5 text-steel-300">
           {mode === 'camera'
             ? 'Apunta la cámara a la placa del vehículo que llega. Cuando termina de pasar se registra la entrada y, si no está inscrito, suena la alerta.'
             : 'Sube una foto o un video: lo que se detecte se guarda en entradas y salidas como prueba.'}
@@ -334,8 +323,8 @@ function CameraMode() {
           {found.map((detection, index) => (
             <Animated.View
               key={detection.read?.id ?? `${detection.plate}-${index}`}
-              entering={FadeInDown.duration(motion.base).springify().damping(20)}
-              layout={SETTLE}
+              entering={appear}
+              layout={settle}
             >
               {detection.read ? (
                 <ReadCard
@@ -472,7 +461,7 @@ function Results({ analysis, now }: { analysis: Analysis; now: number }) {
   const working = analysis.phase === 'working';
 
   return (
-    <Animated.View entering={FadeIn.duration(motion.base)} style={{ gap: 12 }}>
+    <Animated.View entering={appear} style={{ gap: 12 }}>
       <View style={[plateCard, { gap: 12, padding: 16 }]}>
         <View className="flex-row items-center gap-3">
           {working ? <ActivityIndicator color={palette.accent400} /> : null}
@@ -480,7 +469,7 @@ function Results({ analysis, now }: { analysis: Analysis; now: number }) {
             <Text className="text-sm font-semibold text-steel-100" numberOfLines={1}>
               {file.name}
             </Text>
-            <Text className="text-xs text-steel-400">{statusLine(analysis)}</Text>
+            <Text className="text-xs text-steel-300">{statusLine(analysis)}</Text>
           </View>
         </View>
         {working && kind === 'video' ? <ProgressBar progress={analysis.progress} /> : null}
@@ -499,8 +488,8 @@ function Results({ analysis, now }: { analysis: Analysis; now: number }) {
       {detections.map((detection, index) => (
         <Animated.View
           key={detection.read?.id ?? `${detection.plate}-${index}`}
-          entering={FadeInDown.duration(motion.base).springify().damping(20)}
-          layout={SETTLE}
+          entering={appear}
+          layout={settle}
         >
           {detection.read ? (
             <ReadCard
@@ -546,7 +535,7 @@ function ProgressBar({ progress }: { progress: number }) {
         height: 6,
         overflow: 'hidden',
         borderRadius: radius.pill,
-        backgroundColor: palette.ink800,
+        backgroundColor: palette.ink700,
       }}
     >
       <Animated.View
@@ -601,7 +590,7 @@ function Figure({
       >
         {value}
       </Text>
-      <Text className="text-xs text-steel-400" numberOfLines={1}>
+      <Text className="text-xs text-steel-300" numberOfLines={1}>
         {label}
       </Text>
     </View>

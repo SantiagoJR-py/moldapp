@@ -1,13 +1,13 @@
 import * as ImagePicker from 'expo-image-picker';
 import { ActivityIndicator, Text, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { LinkButton } from '@/components/ui/button';
 import { AlertIcon, CameraIcon, CarIcon, IdIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SelectField, type SelectOption } from '@/components/ui/select-field';
 import { TextField } from '@/components/ui/text-field';
-import { motion, palette, radius, shadows } from '@/constants/theme';
+import { palette, radius, shadows } from '@/constants/theme';
 import { VEHICLE_CLASSES } from '@/constants/vehicle';
 import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
@@ -20,6 +20,7 @@ import {
   type VehicleBrand,
   type VehicleInput,
 } from '@/services/vehicle.service';
+import { appear } from '@/lib/motion';
 
 const CLASS_OPTIONS: SelectOption[] = VEHICLE_CLASSES.map((name, index) => ({
   value: index + 1,
@@ -387,7 +388,7 @@ function Reviewed({
 
   return (
     <Animated.View
-      entering={FadeIn.duration(motion.base)}
+      entering={appear}
       style={{
         gap: 8,
         borderRadius: radius.field + 4,

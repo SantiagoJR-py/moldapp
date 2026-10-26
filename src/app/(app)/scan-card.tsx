@@ -3,18 +3,19 @@ import { File } from 'expo-file-system';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Text, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SurfaceGate } from '@/components/surface-gate';
 import { Button } from '@/components/ui/button';
 import { CameraIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
 import { putScan } from '@/lib/scan-store';
 import { vehicleService } from '@/services/vehicle.service';
+import { appear, vanish } from '@/lib/motion';
 
 /** Proporción de una tarjeta ID-1 (85,6 x 54 mm), la de la licencia de tránsito. */
 const CARD_RATIO = 85.6 / 54;
@@ -108,7 +109,7 @@ function ScanCardScreen() {
         <Text className="text-2xl font-bold tracking-tight text-steel-100">
           Permite usar la cámara
         </Text>
-        <Text className="text-sm leading-5 text-steel-400">
+        <Text className="text-sm leading-5 text-steel-300">
           La usamos solo para leer la tarjeta de propiedad y llenar los datos del vehículo. La foto
           no se guarda.
         </Text>
@@ -170,8 +171,8 @@ function ScanCardScreen() {
       >
         {problem ? (
           <Animated.View
-            entering={FadeInDown.duration(motion.base).springify().damping(22)}
-            exiting={FadeOut.duration(motion.fast)}
+            entering={appear}
+            exiting={vanish}
             style={{
               gap: 12,
               borderRadius: radius.card,
@@ -238,8 +239,8 @@ function ScanCardScreen() {
 
       {reading ? (
         <Animated.View
-          entering={FadeIn.duration(motion.fast)}
-          exiting={FadeOut.duration(motion.fast)}
+          entering={appear}
+          exiting={vanish}
           pointerEvents="none"
           style={{ position: 'absolute', left: 0, right: 0, top: frameTop + frameHeight + 20 }}
         >

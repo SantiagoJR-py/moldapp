@@ -79,7 +79,7 @@ function ForgotPasswordScreen() {
               borderRadius: 21,
               borderWidth: 1,
               borderColor: palette.ink600,
-              backgroundColor: palette.ink800,
+              backgroundColor: palette.ink700,
             }}
           >
             <ArrowLeftIcon size={18} color={palette.steel200} />
@@ -90,7 +90,7 @@ function ForgotPasswordScreen() {
             <Text className="text-2xl font-bold tracking-tight text-steel-100">
               Recupera tu contraseña
             </Text>
-            <Text className="text-sm leading-5 text-steel-400">
+            <Text className="text-sm leading-5 text-steel-300">
               Escribe el correo de tu cuenta y te enviaremos un enlace para crear una contraseña
               nueva.
             </Text>
@@ -104,7 +104,7 @@ function ForgotPasswordScreen() {
                 tone="success"
                 message={`Enviamos un enlace a ${email.trim().toLowerCase()}. Ábrelo en tu navegador para cambiar la contraseña.`}
               />
-              <Text className="text-xs leading-5 text-steel-500">
+              <Text className="text-xs leading-5 text-steel-400">
                 El enlace es de un solo uso. Si no lo ves en unos minutos, revisa la carpeta de
                 spam.
               </Text>

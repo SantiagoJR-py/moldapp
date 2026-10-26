@@ -2,13 +2,7 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  LinearTransition,
-  ZoomIn,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GateOnly } from '@/components/gate-only';
@@ -42,7 +36,7 @@ import {
 } from '@/components/vehicles/vehicle-fields';
 import { IDENTIFICATION_TYPES } from '@/constants/identification-types';
 import { roleLabel } from '@/constants/roles';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { isColombianPlate } from '@/constants/vehicle';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { ApiError } from '@/lib/http';
@@ -55,8 +49,8 @@ import { useNow } from '@/lib/use-now';
 import { normalizePlate } from '@/lib/validation';
 import { gateService, type HolderAccount } from '@/services/gate.service';
 import { vehicleService, type ScanResult, type VehicleBrand } from '@/services/vehicle.service';
+import { appear, vanish, settle } from '@/lib/motion';
 
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
 /** Se busca la cuenta cuando la persona deja de escribir el documento. */
 const LOOKUP_DELAY_MS = 450;
 
@@ -318,10 +312,7 @@ function GateRegisterScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
-        style={{ gap: 10 }}
-      >
+      <Animated.View entering={appear} style={{ gap: 10 }}>
         <PressableScale
           accessibilityLabel="Volver"
           depth={0.95}
@@ -338,7 +329,7 @@ function GateRegisterScreen() {
           <Text className="text-sm font-medium text-accent-400">Volver</Text>
         </PressableScale>
         <Text className="text-3xl font-bold tracking-tight text-steel-100">Inscribir vehículo</Text>
-        <Text className="text-sm leading-5 text-steel-400">
+        <Text className="text-sm leading-5 text-steel-300">
           Pide la tarjeta de propiedad y escanéala: los datos del vehículo se llenan solos. El
           propietario lo escribes tú, tal como aparece en su documento.
         </Text>
@@ -360,7 +351,7 @@ function GateRegisterScreen() {
           </View>
           <View className="flex-1 gap-0.5">
             <Text className="text-sm font-semibold text-steel-100">Placa leída por la cámara</Text>
-            <Text className="text-sm text-steel-400" numberOfLines={2}>
+            <Text className="text-sm text-steel-300" numberOfLines={2}>
               {alert
                 ? `${alert.cameraName} · ${relativeTime(new Date(alert.lastSeenAt).getTime(), now)}`
                 : 'Del historial de entradas y salidas'}
@@ -373,11 +364,7 @@ function GateRegisterScreen() {
 
       <Section title="Vehículo">
         {draft === null ? (
-          <Animated.View
-            entering={FadeIn.duration(motion.base)}
-            layout={SETTLE}
-            style={{ gap: 12 }}
-          >
+          <Animated.View entering={appear} layout={settle} style={{ gap: 12 }}>
             <ScanCardButton scanning={scanning} onPress={() => void scanCard()} />
             <PressableScale
               accessibilityLabel="Llenar los datos a mano"
@@ -403,8 +390,8 @@ function GateRegisterScreen() {
           </Animated.View>
         ) : (
           <Animated.View
-            entering={FadeInDown.duration(motion.base).springify().damping(22)}
-            layout={SETTLE}
+            entering={appear}
+            layout={settle}
             style={[plateCard, { gap: 20, padding: 20 }]}
           >
             {review.size > 0 ? (
@@ -514,7 +501,7 @@ function GateRegisterScreen() {
           onPress={() => void onSubmit()}
         />
         {!draft ? (
-          <Text className="text-center text-xs text-steel-500">
+          <Text className="text-center text-xs text-steel-400">
             Primero escanea la tarjeta o llena el vehículo a mano.
           </Text>
         ) : null}
@@ -525,7 +512,7 @@ function GateRegisterScreen() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Animated.View layout={SETTLE} style={{ gap: 12 }}>
+    <Animated.View layout={settle} style={{ gap: 12 }}>
       <Text className="text-lg font-semibold text-steel-100">{title}</Text>
       {children}
     </Animated.View>
@@ -539,17 +526,14 @@ function AccountStatus({ lookup }: { lookup: Lookup }) {
     return (
       <View className="flex-row items-center gap-2">
         <ActivityIndicator size="small" color={palette.steel400} />
-        <Text className="text-xs text-steel-400">Buscando si tiene cuenta en ENTRYX…</Text>
+        <Text className="text-xs text-steel-300">Buscando si tiene cuenta en ENTRYX…</Text>
       </View>
     );
   }
 
   if (lookup.phase === 'none') {
     return (
-      <Animated.Text
-        entering={FadeIn.duration(motion.fast)}
-        className="text-xs leading-4 text-steel-400"
-      >
+      <Animated.Text entering={appear} className="text-xs leading-4 text-steel-300">
         No tiene cuenta en ENTRYX: el vehículo queda a nombre de lo que escribas aquí.
       </Animated.Text>
     );
@@ -557,8 +541,8 @@ function AccountStatus({ lookup }: { lookup: Lookup }) {
 
   return (
     <Animated.View
-      entering={FadeIn.duration(motion.fast)}
-      exiting={FadeOut.duration(motion.fast)}
+      entering={appear}
+      exiting={vanish}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -598,7 +582,7 @@ function AlreadyRegistered({
 
   return (
     <Animated.View
-      entering={FadeInDown.duration(motion.base).springify().damping(22)}
+      entering={appear}
       style={{
         gap: 12,
         borderRadius: radius.field,
@@ -634,7 +618,7 @@ function Registered({ outcome, cameraPlate }: { outcome: Outcome; cameraPlate: s
   return (
     <View className="flex-1 justify-center gap-6 p-6" style={{ paddingBottom: insets.bottom + 24 }}>
       <Animated.View
-        entering={ZoomIn.duration(motion.slow).springify().damping(14)}
+        entering={appear}
         style={{
           height: 72,
           width: 72,
@@ -647,15 +631,12 @@ function Registered({ outcome, cameraPlate }: { outcome: Outcome; cameraPlate: s
       >
         <CheckIcon size={36} color={palette.success} />
       </Animated.View>
-      <Animated.View
-        entering={FadeInDown.duration(motion.base).delay(120)}
-        style={{ alignItems: 'center', gap: 10 }}
-      >
+      <Animated.View entering={appear} style={{ alignItems: 'center', gap: 10 }}>
         <Text className="text-2xl font-bold tracking-tight text-steel-100">
           {linked ? 'Lectura asociada' : 'Vehículo inscrito'}
         </Text>
         <PlateChip plate={plate} colombian={isColombianPlate(plate)} />
-        <Text className="text-center text-sm leading-5 text-steel-400">
+        <Text className="text-center text-sm leading-5 text-steel-300">
           {linked
             ? cameraPlate && cameraPlate !== plate
               ? `Cuando la cámara lea ${cameraPlate}, lo reconocerá como este vehículo. La alerta quedó cerrada.`
@@ -663,7 +644,7 @@ function Registered({ outcome, cameraPlate }: { outcome: Outcome; cameraPlate: s
             : `Quedó a nombre de ${owner}. Desde ya entra y sale sin alertas.`}
         </Text>
       </Animated.View>
-      <Animated.View entering={FadeInDown.duration(motion.base).delay(200)} style={{ gap: 10 }}>
+      <Animated.View entering={appear} style={{ gap: 10 }}>
         <Button label="Volver a las cámaras" onPress={() => router.navigate('/monitor')} />
         <Button label="Ver alertas" variant="outline" onPress={() => router.navigate('/alerts')} />
       </Animated.View>

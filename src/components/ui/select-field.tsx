@@ -1,9 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeInUp,
-  FadeOut,
   interpolateColor,
   useAnimatedStyle,
   useDerivedValue,
@@ -11,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { motion, palette, radius } from '@/constants/theme';
+import { appear, vanish } from '@/lib/motion';
 import { CheckIcon, ChevronDownIcon } from './icons';
 
 export type SelectOption = {
@@ -94,13 +92,13 @@ export function SelectField({
     borderRadius: radius.field,
     borderCurve: 'continuous',
     borderWidth: 1,
-    backgroundColor: palette.ink800,
+    backgroundColor: palette.ink900,
     paddingHorizontal: 16,
   } as const;
 
   return (
     <View className="gap-2">
-      <Text className="text-xs font-medium uppercase tracking-wider text-steel-400">{label}</Text>
+      <Text className="text-[13px] font-medium text-steel-300">{label}</Text>
 
       {open && canSearch ? (
         <Animated.View style={[boxBase, boxStyle]}>
@@ -110,7 +108,7 @@ export function SelectField({
             value={query}
             onChangeText={setQuery}
             placeholder="Escribe para filtrar…"
-            placeholderTextColor={palette.steel500}
+            placeholderTextColor={palette.steel400}
             className="flex-1 text-base text-steel-100"
             style={{ height: FIELD_HEIGHT, outline: 'none' } as never}
             autoCapitalize="none"
@@ -137,7 +135,7 @@ export function SelectField({
         >
           <Animated.View style={[boxBase, boxStyle]}>
             {icon}
-            <Text className={`flex-1 text-base ${selected ? 'text-steel-100' : 'text-steel-500'}`}>
+            <Text className={`flex-1 text-base ${selected ? 'text-steel-100' : 'text-steel-400'}`}>
               {selected?.label ?? placeholder}
             </Text>
             <Animated.View style={chevronStyle}>
@@ -149,15 +147,15 @@ export function SelectField({
 
       {open ? (
         <Animated.View
-          entering={FadeInUp.duration(motion.base).springify().damping(22)}
-          exiting={FadeOut.duration(motion.fast)}
+          entering={appear}
+          exiting={vanish}
           style={{
             overflow: 'hidden',
             borderRadius: radius.field,
             borderCurve: 'continuous',
             borderWidth: 1,
             borderColor: palette.ink600,
-            backgroundColor: palette.ink800,
+            backgroundColor: palette.ink700,
             boxShadow: '0px 10px 28px rgba(0, 0, 0, 0.45)',
           }}
         >
@@ -168,22 +166,19 @@ export function SelectField({
           >
             {filtered.length === 0 ? (
               <View className="px-4 py-3">
-                <Text className="text-sm text-steel-500">
+                <Text className="text-sm text-steel-400">
                   Sin coincidencias para “{query.trim()}”.
                 </Text>
               </View>
             ) : (
               filtered.map((option, index) => (
-                <Animated.View
-                  key={option.value}
-                  entering={FadeIn.duration(motion.fast).delay(Math.min(index, 8) * 18)}
-                >
+                <View key={option.value}>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityState={{ selected: option.value === value }}
                     onPress={() => pick(option.value)}
-                    className={`flex-row items-center justify-between px-4 py-3.5 active:bg-ink-700 ${
-                      index > 0 ? 'border-t border-ink-700' : ''
+                    className={`flex-row items-center justify-between px-4 py-3.5 active:bg-ink-600 ${
+                      index > 0 ? 'border-t border-hairline' : ''
                     }`}
                   >
                     <Text
@@ -197,7 +192,7 @@ export function SelectField({
                       <CheckIcon size={16} color={palette.accent300} />
                     ) : null}
                   </Pressable>
-                </Animated.View>
+                </View>
               ))
             )}
           </ScrollView>

@@ -25,7 +25,7 @@ type ButtonProps = {
 
 const surface: Record<Variant, { background: string; border: string; label: string }> = {
   primary: { background: palette.accent600, border: palette.accent600, label: palette.white },
-  outline: { background: palette.ink800, border: palette.ink600, label: palette.steel100 },
+  outline: { background: palette.ink700, border: palette.ink600, label: palette.steel100 },
   ghost: { background: 'transparent', border: 'transparent', label: palette.accent400 },
 };
 
@@ -33,7 +33,7 @@ const surface: Record<Variant, { background: string; border: string; label: stri
 const reveal: Record<Variant, { background: string; label: string }> = {
   primary: { background: palette.accent400, label: palette.ink950 },
   outline: { background: palette.accent600, label: palette.white },
-  ghost: { background: palette.ink800, label: palette.accent300 },
+  ghost: { background: palette.ink700, label: palette.accent300 },
 };
 
 /**

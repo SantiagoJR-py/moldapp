@@ -60,7 +60,7 @@ export function CameraTile({
         borderRadius: radius.card,
         borderCurve: 'continuous',
         borderWidth: 1,
-        borderColor: palette.ink700,
+        borderColor: palette.hairline,
         backgroundColor: '#03070C',
         boxShadow: shadows.raised,
       }}
@@ -135,7 +135,7 @@ export function CameraTile({
           >
             {camera.lastPlate.plate}
           </Text>
-          <Text className="text-[11px] text-steel-400">
+          <Text className="text-[11px] text-steel-300">
             {relativeTime(new Date(camera.lastPlate.at).getTime(), now)}
           </Text>
         </View>
@@ -239,7 +239,7 @@ function Unavailable({ camera }: { camera: GateCamera }) {
             : 'Sin señal'}
       </Text>
       {camera.error && !connecting ? (
-        <Text className="text-center text-xs leading-4 text-steel-500">
+        <Text className="text-center text-xs leading-4 text-steel-400">
           {camera.error}. Se reintenta solo cada pocos segundos.
         </Text>
       ) : null}

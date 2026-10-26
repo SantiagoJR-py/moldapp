@@ -68,7 +68,7 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
           <Text className="text-base font-semibold text-steel-100" style={tabular}>
             {clockTime(seenAt)}
           </Text>
-          <Text className="text-xs text-steel-500">{relativeTime(seenAt, now)}</Text>
+          <Text className="text-xs text-steel-400">{relativeTime(seenAt, now)}</Text>
         </View>
       </View>
 
@@ -93,7 +93,7 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
               <Text className="text-base font-semibold text-steel-100" numberOfLines={1}>
                 {owner?.fullName ?? 'Vehículo registrado'}
               </Text>
-              <Text className="text-sm text-steel-400" numberOfLines={1}>
+              <Text className="text-sm text-steel-300" numberOfLines={1}>
                 {[owner ? roleLabel(owner.role?.name) : null, vehicleLine]
                   .filter(Boolean)
                   .join(' · ')}
@@ -107,14 +107,14 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
                   Inscrito en portería
                 </Text>
               </View>
-              <Text className="text-sm text-steel-400">
+              <Text className="text-sm text-steel-300">
                 Entró sin registrar y ya quedó inscrito.
               </Text>
             </>
           ) : resolution === 'ALLOWED_VISIT' ? (
             <>
               <Text className="text-base font-semibold text-state-warning">Visita autorizada</Text>
-              <Text className="text-sm text-steel-400" numberOfLines={2}>
+              <Text className="text-sm text-steel-300" numberOfLines={2}>
                 {read.alert?.resolutionNote ?? 'Sin motivo'}
               </Text>
             </>
@@ -124,7 +124,7 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
                 <AlertIcon size={16} color={palette.danger} />
                 <Text className="text-base font-semibold text-state-danger">No registrado</Text>
               </View>
-              <Text className="text-sm text-steel-400">Esta placa no está inscrita en ENTRYX.</Text>
+              <Text className="text-sm text-steel-300">Esta placa no está inscrita en ENTRYX.</Text>
             </>
           )}
         </View>
@@ -133,9 +133,9 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
       <View className="flex-row flex-wrap items-center" style={{ columnGap: 12, rowGap: 8 }}>
         <View className="flex-row items-center gap-1.5">
           <CameraIcon size={14} color={palette.steel500} />
-          <Text className="text-xs text-steel-400">{read.cameraName}</Text>
+          <Text className="text-xs text-steel-300">{read.cameraName}</Text>
         </View>
-        <Text className="text-xs text-steel-500" style={tabular}>
+        <Text className="text-xs text-steel-400" style={tabular}>
           Lectura {Math.round(read.confidence * 100)} %
         </Text>
         {read.source === 'UPLOAD' ? (
@@ -203,7 +203,7 @@ export function ReadCard({ read, now, onRegister, onCorrected }: ReadCardProps) 
             gap: 8,
             borderRadius: radius.field,
             borderCurve: 'continuous',
-            backgroundColor: resolution === 'ALLOWED_VISIT' ? palette.ink800 : palette.accent600,
+            backgroundColor: resolution === 'ALLOWED_VISIT' ? palette.ink700 : palette.accent600,
             borderWidth: resolution === 'ALLOWED_VISIT' ? 1 : 0,
             borderColor: palette.ink600,
           }}
@@ -234,7 +234,7 @@ export function DirectionTag({ entry }: { entry: boolean }) {
       className="flex-row items-center gap-1.5"
       style={{
         borderRadius: radius.pill,
-        backgroundColor: entry ? 'rgba(52, 211, 153, 0.12)' : palette.ink800,
+        backgroundColor: entry ? 'rgba(52, 211, 153, 0.12)' : palette.ink700,
         paddingHorizontal: 10,
         paddingVertical: 5,
       }}

@@ -15,7 +15,7 @@ export default function NotFoundScreen() {
           <Text className="text-xl font-bold tracking-tight text-steel-100">
             Página no encontrada
           </Text>
-          <Text className="text-center text-sm leading-5 text-steel-400">
+          <Text className="text-center text-sm leading-5 text-steel-300">
             El enlace que abriste no existe o no está disponible en esta plataforma.
           </Text>
           <Button label="Volver al inicio" onPress={() => router.replace(entryRoute)} />

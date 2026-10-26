@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/app/avatar';
@@ -20,32 +20,16 @@ import {
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { TextField } from '@/components/ui/text-field';
 import { roleLabel } from '@/constants/roles';
-import { motion, palette, radius, shadows } from '@/constants/theme';
+import { palette, radius, shadows, surface } from '@/constants/theme';
 import { useSession } from '@/context/session';
 import { apiMessage } from '@/lib/api-messages';
 import { entryRoute } from '@/lib/surface';
 import { validateEmail, validateFullName, validatePhone } from '@/lib/validation';
 import { profileService } from '@/services/profile.service';
-
-/** Entrada escalonada, igual que en el inicio, para que la app se sienta una sola. */
-function enter(index: number) {
-  return FadeInDown.duration(motion.slow)
-    .delay(index * 70)
-    .springify()
-    .damping(20);
-}
+import { appear } from '@/lib/motion';
 
 /** Tarjeta de seccion. Se repite dos veces en esta pantalla. */
-const sectionCard = {
-  gap: 20,
-  borderRadius: radius.card,
-  borderCurve: 'continuous',
-  borderWidth: 1,
-  borderColor: palette.ink700,
-  backgroundColor: palette.ink900,
-  padding: 20,
-  boxShadow: shadows.card,
-} as const;
+const sectionCard = { ...surface, gap: 20, padding: 20 } as const;
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -152,7 +136,7 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 22 }}
     >
-      <Animated.View entering={enter(0)} style={{ alignItems: 'center', gap: 12 }}>
+      <Animated.View entering={appear} style={{ alignItems: 'center', gap: 12 }}>
         <View>
           <Avatar fullName={user.fullName} urlImage={user.urlImage} size={104} />
 
@@ -194,10 +178,8 @@ export default function ProfileScreen() {
 
       {feedback ? <Banner tone={feedback.tone} message={feedback.message} /> : null}
 
-      <Animated.View entering={enter(1)} style={sectionCard}>
-        <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
-          Datos que puedes editar
-        </Text>
+      <Animated.View entering={appear} style={sectionCard}>
+        <Text className="text-base font-semibold text-steel-100">Datos que puedes editar</Text>
 
         <TextField
           label="Nombre completo"
@@ -237,12 +219,13 @@ export default function ProfileScreen() {
         />
       </Animated.View>
 
-      <Animated.View entering={enter(2)} style={[sectionCard, { gap: 14 }]}>
-        <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
+      <Animated.View entering={appear} style={[sectionCard, { gap: 4 }]}>
+        <Text className="pb-2 text-base font-semibold text-steel-100">
           Datos administrados por la institución
         </Text>
 
         <ReadOnlyRow
+          first
           icon={<IdIcon size={18} />}
           label="Documento"
           value={
@@ -258,13 +241,13 @@ export default function ProfileScreen() {
           value={user.state === 'ENABLED' ? 'Activo' : 'Inactivo'}
         />
 
-        <Text className="text-xs leading-5 text-steel-500">
+        <Text className="pt-2 text-xs leading-5 text-steel-400">
           Para corregir estos datos escribe al área administrativa.
         </Text>
       </Animated.View>
 
       {/* En el celular no hay menú lateral: cerrar sesión vive aquí. */}
-      <Animated.View entering={enter(3)}>
+      <Animated.View entering={appear}>
         <PressableScale
           accessibilityLabel="Cerrar sesión"
           onPress={() => void signOut().then(() => router.replace(entryRoute))}
@@ -289,35 +272,34 @@ export default function ProfileScreen() {
   );
 }
 
+/** Fila de lista, como en Ajustes: etiqueta a la izquierda, valor a la derecha, sin recuadro propio. */
 function ReadOnlyRow({
   icon,
   label,
   value,
+  first = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  first?: boolean;
 }) {
   return (
     <View
       style={{
+        minHeight: 48,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        borderRadius: radius.field,
-        borderCurve: 'continuous',
-        borderWidth: 1,
-        borderColor: palette.ink700,
-        backgroundColor: palette.ink800,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 10,
+        ...(first ? null : { borderTopWidth: 1, borderTopColor: palette.hairline }),
       }}
     >
       {icon}
-      <View className="flex-1">
-        <Text className="text-[11px] uppercase tracking-widest text-steel-500">{label}</Text>
-        <Text className="mt-0.5 text-sm text-steel-200">{value}</Text>
-      </View>
+      <Text className="text-sm text-steel-300">{label}</Text>
+      <Text className="flex-1 text-right text-sm text-steel-100" numberOfLines={2}>
+        {value}
+      </Text>
     </View>
   );
 }

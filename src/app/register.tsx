@@ -131,7 +131,7 @@ function RegisterScreen() {
           <Card>
             <View className="gap-5">
               <Banner tone="success" message="Tu cuenta quedó creada correctamente." />
-              <Text className="text-sm leading-5 text-steel-400">
+              <Text className="text-sm leading-5 text-steel-300">
                 Ya puedes iniciar sesión aquí o en la aplicación móvil de ENTRYX con el correo{' '}
                 <Text className="text-steel-200">{email.trim().toLowerCase()}</Text>.
               </Text>

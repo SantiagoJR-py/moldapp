@@ -13,6 +13,8 @@ export const palette = {
   ink700: '#1D3A56',
   ink600: '#31506B',
   ink500: '#3F6183',
+  // Borde casi invisible de las superficies: separa por tono, no por línea.
+  hairline: 'rgba(203, 213, 225, 0.07)',
   // Texto y bordes.
   steel700: '#31506B',
   steel600: '#475569',
@@ -78,6 +80,19 @@ export const shadows = {
   raised: '0px 6px 16px rgba(0, 0, 0, 0.38)',
   overlay: '0px 12px 32px rgba(0, 0, 0, 0.48)',
   accent: '0px 8px 24px rgba(47, 128, 237, 0.35)',
+} as const;
+
+/**
+ * Superficie de contenido: un escalón de tono sobre el fondo y un borde casi invisible. El
+ * borde de color solo aparece cuando la superficie lleva un estado (alerta, visita, en orden).
+ */
+export const surface = {
+  borderRadius: radius.card,
+  borderCurve: 'continuous',
+  borderWidth: 1,
+  borderColor: palette.hairline,
+  backgroundColor: palette.ink800,
+  boxShadow: shadows.card,
 } as const;
 
 /** Ancho maximo del contenido en web para que no se estire en pantallas grandes. */

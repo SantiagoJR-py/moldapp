@@ -106,7 +106,7 @@ export const DeviceCamera = forwardRef<DeviceCameraHandle, DeviceCameraProps>(fu
         borderRadius: radius.card,
         borderCurve: 'continuous',
         borderWidth: 1,
-        borderColor: palette.ink700,
+        borderColor: palette.hairline,
         backgroundColor: '#03070C',
       }}
     >
@@ -127,7 +127,7 @@ export const DeviceCamera = forwardRef<DeviceCameraHandle, DeviceCameraProps>(fu
       {state.phase === 'starting' ? (
         <View style={{ alignItems: 'center', gap: 10 }}>
           <ActivityIndicator color={palette.accent400} />
-          <Text className="text-sm text-steel-400">Abriendo la cámara…</Text>
+          <Text className="text-sm text-steel-300">Abriendo la cámara…</Text>
         </View>
       ) : null}
       {state.phase === 'error' ? (

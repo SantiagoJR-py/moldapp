@@ -32,7 +32,7 @@ export function ReadRow({ read }: { read: PlateRead }) {
       >
         {read.alert?.status === 'REGISTERED' && !read.vehicle ? 'Inscrito en portería' : who}
       </Text>
-      <Text className="text-xs text-steel-500" style={tabular}>
+      <Text className="text-xs text-steel-400" style={tabular}>
         {clockTime(new Date(read.seenAt).getTime())}
       </Text>
     </View>

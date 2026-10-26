@@ -54,7 +54,7 @@ export function LoadingScreen({ message }: LoadingScreenProps) {
   return (
     <View
       className="flex-1 items-center justify-center gap-5"
-      style={{ backgroundColor: palette.ink950 }}
+      style={{ backgroundColor: palette.ink900 }}
     >
       <View className="items-center justify-center">
         {/* Halo detras de la marca: da profundidad sin cargar la escena. */}
@@ -75,7 +75,7 @@ export function LoadingScreen({ message }: LoadingScreenProps) {
         </Animated.View>
       </View>
 
-      {message ? <Text className="text-sm text-steel-500">{message}</Text> : null}
+      {message ? <Text className="text-sm text-steel-400">{message}</Text> : null}
     </View>
   );
 }

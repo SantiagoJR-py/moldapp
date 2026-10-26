@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Banner } from '@/components/ui/banner';
@@ -21,7 +21,7 @@ import {
   type Draft,
   type FormErrors,
 } from '@/components/vehicles/vehicle-fields';
-import { motion, palette, radius, shadows } from '@/constants/theme';
+import { palette, radius, shadows } from '@/constants/theme';
 import { apiMessage } from '@/lib/api-messages';
 import { clearScan, peekScan } from '@/lib/scan-store';
 import { currentSurface } from '@/lib/surface';
@@ -31,6 +31,7 @@ import {
   type Vehicle,
   type VehicleBrand,
 } from '@/services/vehicle.service';
+import { appear, vanish, settle } from '@/lib/motion';
 
 type Feedback = { tone: 'success' | 'error' | 'info'; message: string };
 
@@ -38,15 +39,13 @@ type Feedback = { tone: 'success' | 'error' | 'info'; message: string };
  * Las filas se reacomodan solas al agregar o borrar en vez de saltar. Es la
  * animacion que mas hace por la sensacion de calidad en una lista.
  */
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
-
 /** Tarjeta base de la lista y del formulario. */
 const card = {
   borderRadius: radius.card,
   borderCurve: 'continuous',
   borderWidth: 1,
-  borderColor: palette.ink700,
-  backgroundColor: palette.ink900,
+  borderColor: palette.hairline,
+  backgroundColor: palette.ink800,
   boxShadow: shadows.card,
 } as const;
 
@@ -248,7 +247,7 @@ export default function VehiclesScreen() {
     return (
       <View className="flex-1 items-center justify-center gap-3">
         <ActivityIndicator color={palette.accent400} />
-        <Text className="text-sm text-steel-500">Cargando tus vehículos…</Text>
+        <Text className="text-sm text-steel-400">Cargando tus vehículos…</Text>
       </View>
     );
   }
@@ -260,12 +259,9 @@ export default function VehiclesScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
-        style={{ gap: 6 }}
-      >
+      <Animated.View entering={appear} style={{ gap: 6 }}>
         <Text className="text-3xl font-bold tracking-tight text-steel-100">Mis vehículos</Text>
-        <Text className="text-sm leading-5 text-steel-400">
+        <Text className="text-sm leading-5 text-steel-300">
           Registra los vehículos con los que ingresas. Portería los usa para validar tu acceso.
         </Text>
       </Animated.View>
@@ -273,7 +269,7 @@ export default function VehiclesScreen() {
       {feedback ? <Banner tone={feedback.tone} message={feedback.message} /> : null}
 
       {target === null ? (
-        <Animated.View entering={FadeIn.duration(motion.base)} layout={SETTLE} style={{ gap: 12 }}>
+        <Animated.View entering={appear} layout={settle} style={{ gap: 12 }}>
           <ScanCardButton scanning={scanning} onPress={() => void scanCard()} />
 
           <PressableScale
@@ -290,7 +286,7 @@ export default function VehiclesScreen() {
               borderWidth: 1,
               borderStyle: 'dashed',
               borderColor: palette.ink600,
-              backgroundColor: palette.ink900,
+              backgroundColor: palette.ink800,
               paddingVertical: 15,
             }}
           >
@@ -300,12 +296,12 @@ export default function VehiclesScreen() {
         </Animated.View>
       ) : (
         <Animated.View
-          entering={FadeInDown.duration(motion.base).springify().damping(22)}
-          exiting={FadeOut.duration(motion.fast)}
-          layout={SETTLE}
+          entering={appear}
+          exiting={vanish}
+          layout={settle}
           style={[card, { gap: 20, borderColor: 'rgba(61, 143, 245, 0.32)', padding: 20 }]}
         >
-          <Text className="text-[11px] font-medium uppercase tracking-widest text-steel-500">
+          <Text className="text-base font-semibold text-steel-100">
             {target !== 'new'
               ? 'Editar vehículo'
               : fromCard
@@ -346,30 +342,22 @@ export default function VehiclesScreen() {
 
       {vehicles.length === 0 ? (
         <Animated.View
-          entering={FadeIn.duration(motion.base)}
-          layout={SETTLE}
+          entering={appear}
+          layout={settle}
           style={[
             card,
             { alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 40 },
           ]}
         >
           <CarIcon size={32} color={palette.steel500} />
-          <Text className="text-center text-sm text-steel-400">
+          <Text className="text-center text-sm text-steel-300">
             Todavía no tienes vehículos registrados.
           </Text>
         </Animated.View>
       ) : (
         <View className="gap-3">
           {vehicles.map((vehicle, index) => (
-            <Animated.View
-              key={vehicle.id}
-              entering={FadeInDown.duration(motion.base)
-                .delay(Math.min(index, 6) * 55)
-                .springify()
-                .damping(20)}
-              exiting={FadeOut.duration(motion.fast)}
-              layout={SETTLE}
-            >
+            <Animated.View key={vehicle.id} entering={appear} exiting={vanish} layout={settle}>
               <VehicleCard
                 vehicle={vehicle}
                 confirming={confirmingDelete === vehicle.id}
@@ -416,11 +404,11 @@ function VehicleCard({
     justifyContent: 'center',
     borderRadius: radius.field,
     borderCurve: 'continuous',
-    backgroundColor: palette.ink800,
+    backgroundColor: palette.ink700,
   } as const;
 
   return (
-    <Animated.View layout={SETTLE} style={[card, { gap: 16, padding: 16 }]}>
+    <Animated.View layout={settle} style={[card, { gap: 16, padding: 16 }]}>
       <View className="flex-row items-center gap-4">
         <View
           style={{
@@ -441,17 +429,14 @@ function VehicleCard({
           <Text className="text-lg font-bold tracking-widest text-steel-100">
             {vehicle.licensePlateNumber}
           </Text>
-          <Text className="mt-0.5 text-sm text-steel-400">
+          <Text className="mt-0.5 text-sm text-steel-300">
             {description || 'Sin marca registrada'} · {vehicle.model}
           </Text>
-          {details ? <Text className="mt-0.5 text-xs text-steel-500">{details}</Text> : null}
+          {details ? <Text className="mt-0.5 text-xs text-steel-400">{details}</Text> : null}
         </View>
 
         {confirming ? null : (
-          <Animated.View
-            entering={FadeIn.duration(motion.fast)}
-            style={{ flexDirection: 'row', gap: 8 }}
-          >
+          <Animated.View entering={appear} style={{ flexDirection: 'row', gap: 8 }}>
             <PressableScale
               accessibilityLabel={`Editar vehículo ${vehicle.licensePlateNumber}`}
               depth={0.9}
@@ -475,8 +460,8 @@ function VehicleCard({
 
       {confirming ? (
         <Animated.View
-          entering={FadeInDown.duration(motion.base).springify().damping(22)}
-          exiting={FadeOut.duration(motion.fast)}
+          entering={appear}
+          exiting={vanish}
           style={{
             gap: 12,
             borderRadius: radius.field,
@@ -527,7 +512,7 @@ function VehicleCard({
                 borderCurve: 'continuous',
                 borderWidth: 1,
                 borderColor: palette.ink600,
-                backgroundColor: palette.ink800,
+                backgroundColor: palette.ink700,
               }}
             >
               <Text className="text-sm font-medium text-steel-200">Cancelar</Text>

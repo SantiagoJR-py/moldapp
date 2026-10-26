@@ -32,8 +32,8 @@ export function SideMenu() {
       style={{
         height: '100%',
         borderRightWidth: 1,
-        borderRightColor: palette.ink700,
-        backgroundColor: palette.ink900,
+        borderRightColor: palette.hairline,
+        backgroundColor: palette.ink950,
         paddingTop: insets.top + 16,
         paddingBottom: insets.bottom + 16,
       }}
@@ -46,7 +46,7 @@ export function SideMenu() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {sections.map((section) => (
           <View key={section.title} className="px-3 pb-6">
-            <Text className="px-3 pb-2.5 text-[11px] font-medium uppercase tracking-widest text-steel-500">
+            <Text className="px-3 pb-2 text-xs font-medium text-steel-400">
               {section.title}
             </Text>
 
@@ -122,7 +122,7 @@ export function SideMenu() {
                   ) : null}
                   {item.href ? null : (
                     <View className="rounded-pill bg-ink-700 px-2 py-0.5">
-                      <Text className="text-[10px] text-steel-400">Pronto</Text>
+                      <Text className="text-[10px] text-steel-300">Pronto</Text>
                     </View>
                   )}
                 </PressableScale>
@@ -141,7 +141,7 @@ export function SideMenu() {
             borderRadius: radius.field,
             borderCurve: 'continuous',
             borderWidth: 1,
-            borderColor: palette.ink700,
+            borderColor: palette.hairline,
             backgroundColor: palette.ink800,
             padding: 12,
           }}
@@ -152,7 +152,7 @@ export function SideMenu() {
               <Text numberOfLines={1} className="text-sm font-medium text-steel-100">
                 {user.fullName}
               </Text>
-              <Text numberOfLines={1} className="text-xs text-steel-500">
+              <Text numberOfLines={1} className="text-xs text-steel-400">
                 {roleLabel(user.role?.name)}
               </Text>
             </View>

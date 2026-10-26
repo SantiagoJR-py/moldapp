@@ -41,7 +41,7 @@ export function LiveStatus({ status }: { status: FeedStatus }) {
           dotStyle,
         ]}
       />
-      <Text className="text-sm text-steel-400">{copy[status].text}</Text>
+      <Text className="text-sm text-steel-300">{copy[status].text}</Text>
     </View>
   );
 }

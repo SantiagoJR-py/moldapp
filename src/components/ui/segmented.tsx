@@ -53,7 +53,8 @@ export function Segmented<T extends string>({
         flexDirection: 'row',
         borderRadius: radius.field,
         borderCurve: 'continuous',
-        backgroundColor: palette.ink800,
+        // Riel hundido: un velo oscuro que se lee igual sobre el fondo y dentro de una tarjeta.
+        backgroundColor: 'rgba(8, 12, 18, 0.38)',
         padding: PADDING,
       }}
     >

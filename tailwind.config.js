@@ -17,6 +17,8 @@ module.exports = {
           600: '#31506B', // Steel Blue - bordes
           500: '#3F6183', // borde resaltado
         },
+        // Borde casi invisible de las superficies (ver `surface` en theme.ts).
+        hairline: 'rgba(203, 213, 225, 0.07)',
         // Texto y bordes claros.
         steel: {
           700: '#31506B', // Steel Blue

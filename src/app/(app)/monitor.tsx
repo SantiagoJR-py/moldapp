@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActivityList, useGateActivity } from '@/components/gate/activity-list';
@@ -15,12 +15,13 @@ import {
   ChevronRightIcon,
   RestoreIcon,
   ScanIcon,
+  ShieldIcon,
   UploadIcon,
   VideoIcon,
 } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { GateOnly } from '@/components/gate-only';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { apiMessage } from '@/lib/api-messages';
 import { ApiError } from '@/lib/http';
@@ -28,6 +29,7 @@ import { useContentWidth, WIDE_CONTENT_WIDTH } from '@/lib/layout';
 import { useNow } from '@/lib/use-now';
 import { relativeTime } from '@/lib/time';
 import { gateService, type CameraDirection, type GateCamera } from '@/services/gate.service';
+import { appear, vanish, settle } from '@/lib/motion';
 
 /** El estado de las cámaras (en vivo, sin señal, última placa) cambia lento. */
 const CAMERAS_POLL_MS = 5000;
@@ -36,8 +38,6 @@ const RAIL_MIN = 980;
 const RAIL_WIDTH = 360;
 const RECENT_ITEMS = 8;
 const RAIL_ALERTS = 3;
-
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
 
 type CamerasState =
   | { phase: 'loading' }
@@ -164,7 +164,7 @@ function MonitorScreen() {
         <View style={{ gap: 12 }}>
           <Banner tone="error" message={state.message} />
           {state.offline ? (
-            <Text className="text-sm leading-5 text-steel-400">
+            <Text className="text-sm leading-5 text-steel-300">
               Las cámaras fijas las maneja el servicio de visión de este PC. Mientras se enciende,
               puedes usar la cámara de este equipo.
             </Text>
@@ -198,11 +198,8 @@ function MonitorScreen() {
         {shown.map((camera, index) => (
           <Animated.View
             key={camera.id}
-            entering={FadeInDown.duration(motion.base)
-              .delay(index * 60)
-              .springify()
-              .damping(20)}
-            layout={SETTLE}
+            entering={appear}
+            layout={settle}
             style={{ width: tileWidth }}
           >
             <CameraTile
@@ -236,14 +233,14 @@ function MonitorScreen() {
         </PressableScale>
       </View>
       {feed.reads.length === 0 ? (
-        <Text className="text-sm leading-5 text-steel-500">
+        <Text className="text-sm leading-5 text-steel-400">
           {feed.status === 'live'
             ? 'Aún no pasa ningún vehículo hoy.'
             : 'Conectando con el historial…'}
         </Text>
       ) : (
         feed.reads.slice(0, RECENT_ITEMS).map((read) => (
-          <Animated.View key={read.id} entering={FadeInDown.duration(motion.base)} layout={SETTLE}>
+          <Animated.View key={read.id} entering={appear} layout={settle}>
             <ReadRow read={read} />
           </Animated.View>
         ))
@@ -258,7 +255,7 @@ function MonitorScreen() {
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
       <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
+        entering={appear}
         style={{
           flexDirection: withRail ? 'row' : 'column',
           alignItems: withRail ? 'flex-end' : 'stretch',
@@ -267,7 +264,7 @@ function MonitorScreen() {
       >
         <View style={{ flex: withRail ? 1 : undefined, gap: 6 }}>
           <Text className="text-3xl font-bold tracking-tight text-steel-100">En vivo</Text>
-          <Text className="text-sm text-steel-400">
+          <Text className="text-sm text-steel-300">
             {state.phase === 'ready' && cameras.length > 0
               ? `${liveCount} de ${cameras.length} ${cameras.length === 1 ? 'cámara transmitiendo' : 'cámaras transmitiendo'} · las placas se leen solas`
               : 'Cámaras de portería con lectura de placas'}
@@ -343,7 +340,7 @@ function QuickAction({ label, icon, grow, onPress }: QuickActionProps) {
           borderCurve: 'continuous',
           borderWidth: 1,
           borderColor: palette.ink600,
-          backgroundColor: palette.ink800,
+          backgroundColor: palette.ink700,
           justifyContent: 'center',
           paddingHorizontal: 14,
           paddingVertical: 10,
@@ -365,12 +362,15 @@ function PendingRail({ now }: { now: number }) {
   if (pending.length === 0) {
     return (
       <Animated.View
-        entering={FadeIn.duration(motion.base)}
-        style={[plateCard, { gap: 4, padding: 16, borderColor: 'rgba(52, 211, 153, 0.35)' }]}
+        entering={appear}
+        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, padding: 4 }}
       >
-        <Text className="text-base font-semibold text-steel-100">Sin pendientes</Text>
-        <Text className="text-sm leading-5 text-steel-400">
-          Todos los vehículos que entraron están inscritos.
+        <View className="mt-0.5">
+          <ShieldIcon size={18} color={palette.success} />
+        </View>
+        <Text className="flex-1 text-sm leading-5 text-steel-300">
+          <Text className="font-semibold text-state-success">Sin pendientes</Text>
+          {'  ·  '}Todos los vehículos que entraron están inscritos.
         </Text>
       </Animated.View>
     );
@@ -395,12 +395,7 @@ function PendingRail({ now }: { now: number }) {
         ) : null}
       </View>
       {pending.slice(0, RAIL_ALERTS).map((alert) => (
-        <Animated.View
-          key={alert.id}
-          entering={FadeInDown.duration(motion.base).springify().damping(20)}
-          exiting={FadeOut.duration(motion.fast)}
-          layout={SETTLE}
-        >
+        <Animated.View key={alert.id} entering={appear} exiting={vanish} layout={settle}>
           <AlertCard alert={alert} now={now} />
         </Animated.View>
       ))}
@@ -415,7 +410,7 @@ function NoCameras({ hasRemoved }: { hasRemoved: boolean }) {
       <Text className="text-base font-semibold text-steel-100">
         {hasRemoved ? 'Todas las cámaras están quitadas' : 'No hay cámaras fijas configuradas'}
       </Text>
-      <Text className="text-sm leading-5 text-steel-400">
+      <Text className="text-sm leading-5 text-steel-300">
         {hasRemoved
           ? 'Restaura una abajo, en Cámaras quitadas, para volver a leer placas. Mientras tanto, usa la cámara de este equipo.'
           : 'Agrégalas en el archivo camaras.json del servicio de visión (canal RTSP del DVR o capturadora USB) y reinícialo. Mientras tanto, usa la cámara de este equipo.'}
@@ -443,7 +438,7 @@ function RemovedCameras({
           className="flex-row items-center gap-3"
           style={[
             { paddingVertical: 10 },
-            index > 0 ? { borderTopWidth: 1, borderTopColor: palette.ink700 } : null,
+            index > 0 ? { borderTopWidth: 1, borderTopColor: palette.hairline } : null,
           ]}
         >
           <VideoIcon size={18} color={palette.steel500} />
@@ -451,7 +446,7 @@ function RemovedCameras({
             <Text className="text-sm font-medium text-steel-200" numberOfLines={1}>
               {camera.name}
             </Text>
-            <Text className="text-xs text-steel-500" numberOfLines={1}>
+            <Text className="text-xs text-steel-400" numberOfLines={1}>
               Quitada{camera.removedBy ? ` por ${camera.removedBy}` : ''}
               {camera.removedAt
                 ? ` · ${relativeTime(new Date(camera.removedAt).getTime(), now)}`
@@ -493,7 +488,7 @@ function RestoreButton({
         borderCurve: 'continuous',
         borderWidth: 1,
         borderColor: palette.ink600,
-        backgroundColor: palette.ink800,
+        backgroundColor: palette.ink700,
         paddingHorizontal: 12,
       }}
     >
@@ -518,12 +513,12 @@ function TileSkeleton() {
         borderRadius: radius.card,
         borderCurve: 'continuous',
         borderWidth: 1,
-        borderColor: palette.ink700,
-        backgroundColor: palette.ink900,
+        borderColor: palette.hairline,
+        backgroundColor: palette.ink800,
       }}
     >
       <VideoIcon size={26} color={palette.steel600} />
-      <Text className="text-sm text-steel-500">Conectando con las cámaras…</Text>
+      <Text className="text-sm text-steel-400">Conectando con las cámaras…</Text>
     </View>
   );
 }

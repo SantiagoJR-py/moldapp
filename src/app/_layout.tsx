@@ -21,10 +21,10 @@ const theme = {
   colors: {
     ...DarkTheme.colors,
     primary: palette.accent500,
-    background: palette.ink950,
-    card: palette.ink900,
+    background: palette.ink900,
+    card: palette.ink800,
     text: palette.steel100,
-    border: palette.ink700,
+    border: palette.hairline,
   },
 };
 
@@ -50,7 +50,7 @@ export default function RootLayout() {
               screenOptions={{
                 headerShown: false,
                 animation: 'fade',
-                contentStyle: { backgroundColor: palette.ink950 },
+                contentStyle: { backgroundColor: palette.ink900 },
               }}
             />
           </SessionProvider>

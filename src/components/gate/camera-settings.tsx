@@ -81,7 +81,7 @@ export function CameraSettings({ camera, onDirection, onRemove, onClose }: Camer
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: radius.pill,
-              backgroundColor: palette.ink800,
+              backgroundColor: palette.ink700,
             }}
           >
             <CloseIcon size={15} color={palette.steel300} />
@@ -125,7 +125,7 @@ export function CameraSettings({ camera, onDirection, onRemove, onClose }: Camer
                     borderCurve: 'continuous',
                     borderWidth: 1,
                     borderColor: palette.ink600,
-                    backgroundColor: palette.ink800,
+                    backgroundColor: palette.ink700,
                   }}
                 >
                   <Text className="text-sm font-medium text-steel-200">No quitar</Text>
@@ -136,7 +136,7 @@ export function CameraSettings({ camera, onDirection, onRemove, onClose }: Camer
         ) : (
           <>
             <View style={{ gap: 6 }}>
-              <Text className="text-xs font-medium text-steel-400">
+              <Text className="text-xs font-medium text-steel-300">
                 Sentido · solo las entradas alertan
               </Text>
               <Segmented

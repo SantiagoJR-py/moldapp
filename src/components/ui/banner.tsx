@@ -1,8 +1,9 @@
 import { Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { AlertIcon, CheckIcon, InfoIcon } from './icons';
+import { appear, vanish } from '@/lib/motion';
 
 type Tone = 'error' | 'success' | 'info';
 
@@ -38,8 +39,8 @@ export function Banner({ tone, message }: BannerProps) {
       // La clave hace que cambiar de tono o de texto reinicie la entrada, en vez
       // de mutar el aviso en silencio y pasar desapercibido.
       key={`${tone}-${message}`}
-      entering={FadeInDown.duration(motion.base).springify().damping(20)}
-      exiting={FadeOut.duration(motion.fast)}
+      entering={appear}
+      exiting={vanish}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-start',

@@ -57,7 +57,7 @@ export const DeviceCamera = forwardRef<DeviceCameraHandle, DeviceCameraProps>(fu
           <Text className="text-center text-base font-semibold text-steel-100">
             Permite usar la cámara
           </Text>
-          <Text className="text-center text-sm leading-5 text-steel-400">
+          <Text className="text-center text-sm leading-5 text-steel-300">
             La usamos para leer las placas de los vehículos que llegan. Las fotos no se guardan.
           </Text>
           <View style={{ alignSelf: 'stretch' }}>
@@ -98,7 +98,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         borderRadius: radius.card,
         borderCurve: 'continuous',
         borderWidth: 1,
-        borderColor: palette.ink700,
+        borderColor: palette.hairline,
         backgroundColor: '#03070C',
       }}
     >

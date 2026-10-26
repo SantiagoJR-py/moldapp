@@ -61,7 +61,7 @@ export function DropZone({ onFile, disabled = false, accept, title, hint }: Drop
         outline: 'none',
         borderRadius: radius.card,
         border: `1.5px ${over ? 'solid' : 'dashed'} ${over ? palette.accent400 : palette.ink600}`,
-        background: over ? 'rgba(61, 143, 245, 0.08)' : palette.ink900,
+        background: over ? 'rgba(61, 143, 245, 0.08)' : palette.ink800,
         opacity: disabled ? 0.6 : 1,
         transition: `border-color ${motion.fast}ms ease-out, background ${motion.fast}ms ease-out`,
         padding: '40px 24px',
@@ -97,7 +97,7 @@ export function DropZone({ onFile, disabled = false, accept, title, hint }: Drop
         <Text className="text-center text-sm text-accent-400">
           o haz clic para elegir un archivo
         </Text>
-        <Text className="text-center text-xs leading-5 text-steel-500">{hint}</Text>
+        <Text className="text-center text-xs leading-5 text-steel-400">{hint}</Text>
       </View>
     </div>
   );

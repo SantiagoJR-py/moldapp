@@ -17,8 +17,8 @@ import { TopBar } from './top-bar';
 /** Pantallas de cámara a pantalla completa: sin barras alrededor. */
 const IMMERSIVE = ['/scan-card'];
 
-/** El monitor de cámaras aprovecha todo el ancho del PC de la caseta. */
-const WIDE_ROUTES = ['/monitor'];
+/** El monitor de cámaras y el Inicio de portería aprovechan todo el ancho del PC de la caseta. */
+const WIDE_ROUTES = ['/monitor', '/home'];
 
 type AppShellProps = {
   children: ReactNode;
@@ -45,7 +45,7 @@ export function AppShell({ children }: AppShellProps) {
   const maxWidth = WIDE_ROUTES.includes(pathname) ? WIDE_CONTENT_WIDTH : MAX_CONTENT_WIDTH;
 
   return (
-    <View className="flex-1 flex-row bg-ink-950">
+    <View className="flex-1 flex-row bg-ink-900">
       {permanent ? (
         <View style={{ width: SIDE_MENU_WIDTH }}>
           <SideMenu />

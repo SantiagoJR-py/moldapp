@@ -2,9 +2,6 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeInDown,
-  LinearTransition,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -21,9 +18,10 @@ import { Banner } from '@/components/ui/banner';
 import { CameraIcon } from '@/components/ui/icons';
 import { Segmented } from '@/components/ui/segmented';
 import { GateOnly } from '@/components/gate-only';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { relativeTime } from '@/lib/time';
 import type { PlateRead, PlateReadSummary } from '@/services/plate-read.service';
+import { appear, settle } from '@/lib/motion';
 
 /** Una cámara sin lecturas en este lapso se muestra como inactiva. */
 const CAMERA_IDLE_MS = 5 * 60 * 1000;
@@ -37,8 +35,6 @@ const MAX_CONTENT_WIDTH = 860;
 
 /** A partir de este ancho de contenido el resumen pasa a una columna lateral. */
 const TWO_COLUMN_MIN = 720;
-
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
 
 type Filter = 'all' | 'entries' | 'exits' | 'unregistered';
 
@@ -108,22 +104,15 @@ function AccessLogScreen() {
           <EmptyState />
         ) : null
       ) : visible.length === 0 ? (
-        <Text className="py-6 text-center text-sm text-steel-500">
+        <Text className="py-6 text-center text-sm text-steel-400">
           No hay lecturas recientes con este filtro.
         </Text>
       ) : (
         groups.map((group) => (
           <View key={group.label} style={{ gap: 12 }}>
-            <Text className="text-sm font-semibold text-steel-400">{group.label}</Text>
+            <Text className="text-sm font-semibold text-steel-300">{group.label}</Text>
             {group.reads.map((read, index) => (
-              <Animated.View
-                key={read.id}
-                entering={FadeInDown.duration(motion.base)
-                  .delay(Math.min(index, 6) * 55)
-                  .springify()
-                  .damping(20)}
-                layout={SETTLE}
-              >
+              <Animated.View key={read.id} entering={appear} layout={settle}>
                 <ReadCard
                   read={read}
                   now={now}
@@ -144,10 +133,7 @@ function AccessLogScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
-        style={{ gap: 8 }}
-      >
+      <Animated.View entering={appear} style={{ gap: 8 }}>
         <Text className="text-3xl font-bold tracking-tight text-steel-100">Entradas y salidas</Text>
         <LiveStatus status={status} />
       </Animated.View>
@@ -203,6 +189,7 @@ function SummaryPanel({
     { label: 'Entradas hoy', value: summary?.entriesToday, alert: false },
     { label: 'Sin registrar hoy', value: summary?.unregisteredToday, alert: true },
   ];
+  // Es un conteo, no algo por resolver: va en ámbar y el rojo queda para las alertas pendientes.
 
   return (
     <View style={[plateCard, { flexDirection: vertical ? 'column' : 'row', overflow: 'hidden' }]}>
@@ -216,17 +203,17 @@ function SummaryPanel({
               gap: 2,
               paddingHorizontal: 16,
               paddingVertical: 14,
-              borderColor: palette.ink700,
-              ...(index > 0 ? (vertical ? { borderTopWidth: 1 } : { borderLeftWidth: 1 }) : null),
+              borderColor: palette.hairline,
+              ...(vertical && index > 0 ? { borderTopWidth: 1 } : null),
             }}
           >
             <Text
               className="text-2xl font-bold"
-              style={[tabular, { color: highlighted ? palette.danger : palette.steel100 }]}
+              style={[tabular, { color: highlighted ? palette.warning : palette.steel100 }]}
             >
               {item.value ?? '–'}
             </Text>
-            <Text className="text-xs text-steel-400" numberOfLines={2}>
+            <Text className="text-xs text-steel-300" numberOfLines={2}>
               {item.label}
             </Text>
           </View>
@@ -241,7 +228,7 @@ function CameraPanel({ cameras, now }: { cameras: CameraInfo[]; now: number }) {
     <View style={[plateCard, { gap: 14, padding: 16 }]}>
       <Text className="text-sm font-semibold text-steel-200">Cámaras</Text>
       {cameras.length === 0 ? (
-        <Text className="text-sm leading-5 text-steel-500">
+        <Text className="text-sm leading-5 text-steel-400">
           Aparecen aquí cuando envían su primera lectura.
         </Text>
       ) : (
@@ -261,7 +248,7 @@ function CameraPanel({ cameras, now }: { cameras: CameraInfo[]; now: number }) {
                 <Text className="text-sm text-steel-100" numberOfLines={1}>
                   {camera.name}
                 </Text>
-                <Text className="text-xs text-steel-500">
+                <Text className="text-xs text-steel-400">
                   {active ? 'Última lectura ' : 'Inactiva · '}
                   {relativeTime(camera.lastSeen, now)}
                 </Text>
@@ -283,7 +270,7 @@ function SkeletonCard() {
   }, [reduceMotion, pulse]);
 
   const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
-  const block = { borderRadius: 6, backgroundColor: palette.ink800 } as const;
+  const block = { borderRadius: 6, backgroundColor: palette.ink700 } as const;
 
   return (
     <Animated.View style={[plateCard, { gap: 14, padding: 16 }, style]}>
@@ -305,7 +292,7 @@ function SkeletonCard() {
 function EmptyState() {
   return (
     <Animated.View
-      entering={FadeIn.duration(motion.base)}
+      entering={appear}
       style={[
         plateCard,
         { alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingVertical: 40 },
@@ -315,7 +302,7 @@ function EmptyState() {
       <Text className="text-center text-base font-semibold text-steel-200">
         Todavía no hay lecturas de placas
       </Text>
-      <Text className="text-center text-sm leading-5 text-steel-400">
+      <Text className="text-center text-sm leading-5 text-steel-300">
         Cuando una cámara de portería lea una placa, aparece aquí al instante con su foto, el
         sentido y a quién pertenece.
       </Text>

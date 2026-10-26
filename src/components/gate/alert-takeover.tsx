@@ -23,6 +23,7 @@ import { motion, palette, radius } from '@/constants/theme';
 import { isColombianPlate } from '@/constants/vehicle';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { resolveImageUrl } from '@/lib/images';
+import { stillMotion } from '@/lib/motion';
 import { clockTime } from '@/lib/time';
 
 /** Mientras se inscribe un vehículo o se toma la foto de la tarjeta solo suena: tapar el
@@ -93,11 +94,15 @@ export function AlertTakeover() {
         <Animated.View
           key={alert.id}
           entering={
-            reduceMotion
+            stillMotion || reduceMotion
               ? FadeIn.duration(motion.base)
-              : SlideInUp.springify().damping(18).stiffness(160)
+              : SlideInUp.duration(motion.slow)
           }
-          exiting={reduceMotion ? FadeOut.duration(motion.fast) : SlideOutUp.duration(motion.base)}
+          exiting={
+            stillMotion || reduceMotion
+              ? FadeOut.duration(motion.fast)
+              : SlideOutUp.duration(motion.base)
+          }
           accessibilityRole="alert"
           accessibilityLiveRegion="assertive"
           style={{ width: '100%', maxWidth: 460, alignSelf: 'center' }}
@@ -125,7 +130,7 @@ export function AlertTakeover() {
               borderCurve: 'continuous',
               borderWidth: 1,
               borderColor: 'rgba(251, 113, 133, 0.55)',
-              backgroundColor: palette.ink900,
+              backgroundColor: palette.ink800,
               boxShadow: '0px 24px 64px rgba(0, 0, 0, 0.6)',
             }}
           >

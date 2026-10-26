@@ -2,20 +2,21 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { PlateChip } from '@/components/plates/plate-chip';
 import { plateCard, tabular } from '@/components/plates/styles';
 import { CameraIcon, CardIcon, CheckIcon, UsersIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { TextField } from '@/components/ui/text-field';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { isColombianPlate } from '@/constants/vehicle';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { apiMessage } from '@/lib/api-messages';
 import { resolveImageUrl } from '@/lib/images';
 import { clockTime, relativeTime } from '@/lib/time';
 import { gateService, type GateAlert } from '@/services/gate.service';
+import { appear, vanish } from '@/lib/motion';
 
 /** Los motivos que más se repiten en una portería: un toque en vez de escribir. */
 const QUICK_REASONS = [
@@ -91,7 +92,7 @@ export function AlertCard({ alert, now, startWithVisit = false }: AlertCardProps
           <Text className="text-base font-semibold text-steel-100" style={tabular}>
             {clockTime(seenAt)}
           </Text>
-          <Text className="text-xs text-steel-500">{relativeTime(seenAt, now)}</Text>
+          <Text className="text-xs text-steel-400">{relativeTime(seenAt, now)}</Text>
         </View>
       </View>
 
@@ -119,15 +120,15 @@ export function AlertCard({ alert, now, startWithVisit = false }: AlertCardProps
 
       {visitOpen ? (
         <Animated.View
-          entering={FadeInDown.duration(motion.base).springify().damping(22)}
-          exiting={FadeOut.duration(motion.fast)}
+          entering={appear}
+          exiting={vanish}
           style={{
             gap: 12,
             borderRadius: radius.field,
             borderCurve: 'continuous',
             borderWidth: 1,
             borderColor: palette.ink600,
-            backgroundColor: palette.ink800,
+            backgroundColor: palette.ink700,
             padding: 14,
           }}
         >
@@ -173,7 +174,7 @@ export function AlertCard({ alert, now, startWithVisit = false }: AlertCardProps
               );
             })}
           </View>
-          <Text className="text-xs leading-4 text-steel-400">
+          <Text className="text-xs leading-4 text-steel-300">
             Puede entrar hoy sin volver a alertar. Si regresa otro día, se alerta de nuevo.
           </Text>
           <View className="flex-row gap-2">
@@ -193,10 +194,7 @@ export function AlertCard({ alert, now, startWithVisit = false }: AlertCardProps
           </View>
         </Animated.View>
       ) : (
-        <Animated.View
-          entering={FadeIn.duration(motion.fast)}
-          style={{ flexDirection: 'row', gap: 8 }}
-        >
+        <Animated.View entering={appear} style={{ flexDirection: 'row', gap: 8 }}>
           <Action label="Inscribir con TP" icon="card" tone="primary" onPress={register} />
           <Action label="Visita" icon="visit" tone="quiet" onPress={() => setVisitOpen(true)} />
         </Animated.View>
@@ -236,7 +234,7 @@ function Action({ label, tone, icon, loading = false, disabled = false, onPress 
           borderCurve: 'continuous',
           borderWidth: primary ? 0 : 1,
           borderColor: palette.ink600,
-          backgroundColor: primary ? palette.accent600 : palette.ink800,
+          backgroundColor: primary ? palette.accent600 : palette.ink700,
           opacity: disabled ? 0.5 : 1,
         }}
       >
@@ -273,7 +271,7 @@ export function ResolvedRow({ alert }: { alert: GateAlert }) {
         <Text className="text-sm text-steel-100" numberOfLines={1}>
           {detail}
         </Text>
-        <Text className="text-xs text-steel-500" numberOfLines={1}>
+        <Text className="text-xs text-steel-400" numberOfLines={1}>
           {who ? `Por ${who}` : 'Resuelta'}
           {alert.resolvedAt ? ` · ${clockTime(new Date(alert.resolvedAt).getTime())}` : ''}
         </Text>

@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AlertCard, ResolvedRow } from '@/components/gate/alert-card';
@@ -9,11 +9,10 @@ import { plateCard } from '@/components/plates/styles';
 import { Banner } from '@/components/ui/banner';
 import { ShieldIcon } from '@/components/ui/icons';
 import { GateOnly } from '@/components/gate-only';
-import { motion, palette } from '@/constants/theme';
+import { palette } from '@/constants/theme';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { useNow } from '@/lib/use-now';
-
-const SETTLE = LinearTransition.duration(motion.base).springify().damping(22);
+import { appear, vanish, settle } from '@/lib/motion';
 
 export default function AlertsRoute() {
   return (
@@ -38,12 +37,9 @@ function AlertsScreen() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 20 }}
     >
-      <Animated.View
-        entering={FadeInDown.duration(motion.slow).springify().damping(20)}
-        style={{ gap: 8 }}
-      >
+      <Animated.View entering={appear} style={{ gap: 8 }}>
         <Text className="text-3xl font-bold tracking-tight text-steel-100">Alertas</Text>
-        <Text className="text-sm leading-5 text-steel-400">
+        <Text className="text-sm leading-5 text-steel-300">
           {count === 0
             ? 'Ningún vehículo sin registrar está esperando.'
             : count === 1
@@ -57,7 +53,7 @@ function AlertsScreen() {
 
       {count === 0 && status === 'live' ? (
         <Animated.View
-          entering={FadeIn.duration(motion.base)}
+          entering={appear}
           style={[
             plateCard,
             { alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingVertical: 36 },
@@ -65,7 +61,7 @@ function AlertsScreen() {
         >
           <ShieldIcon size={34} color={palette.success} />
           <Text className="text-center text-base font-semibold text-steel-100">Todo en orden</Text>
-          <Text className="text-center text-sm leading-5 text-steel-400">
+          <Text className="text-center text-sm leading-5 text-steel-300">
             Cuando una cámara lea la placa de un vehículo que no está inscrito, aparece aquí y suena
             una alerta en todas las pantallas de portería.
           </Text>
@@ -73,15 +69,7 @@ function AlertsScreen() {
       ) : (
         <View style={{ gap: 12 }}>
           {pending.map((alert, index) => (
-            <Animated.View
-              key={alert.id}
-              entering={FadeInDown.duration(motion.base)
-                .delay(Math.min(index, 5) * 55)
-                .springify()
-                .damping(20)}
-              exiting={FadeOut.duration(motion.fast)}
-              layout={SETTLE}
-            >
+            <Animated.View key={alert.id} entering={appear} exiting={vanish} layout={settle}>
               {/* La clave cambia al pedir la visita: la tarjeta se monta de nuevo con el formulario
                   abierto, también si la persona ya estaba en esta pantalla. */}
               <AlertCard
@@ -96,14 +84,14 @@ function AlertsScreen() {
       )}
 
       {resolvedToday.length > 0 ? (
-        <Animated.View layout={SETTLE} style={{ gap: 10 }}>
+        <Animated.View layout={settle} style={{ gap: 10 }}>
           <Text className="text-lg font-semibold text-steel-100">Resueltas hoy</Text>
           <View style={[plateCard, { paddingHorizontal: 16, paddingVertical: 4 }]}>
             {resolvedToday.map((alert, index) => (
               <View
                 key={alert.id}
                 style={
-                  index > 0 ? { borderTopWidth: 1, borderTopColor: palette.ink700 } : undefined
+                  index > 0 ? { borderTopWidth: 1, borderTopColor: palette.hairline } : undefined
                 }
               >
                 <ResolvedRow alert={alert} />

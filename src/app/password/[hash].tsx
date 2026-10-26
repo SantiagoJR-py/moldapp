@@ -102,7 +102,7 @@ function ChangePasswordScreen() {
           <Card>
             <View className="items-center gap-4 py-6">
               <ActivityIndicator color={palette.accent400} />
-              <Text className="text-sm text-steel-400">Validando el enlace…</Text>
+              <Text className="text-sm text-steel-300">Validando el enlace…</Text>
             </View>
           </Card>
         ) : null}
@@ -111,7 +111,7 @@ function ChangePasswordScreen() {
           <Card>
             <View className="gap-5">
               <Banner tone="error" message="Este enlace no es válido o ya fue utilizado." />
-              <Text className="text-sm leading-5 text-steel-400">
+              <Text className="text-sm leading-5 text-steel-300">
                 Por seguridad registramos el intento junto con la dirección IP desde la que se
                 abrió. Si fuiste tú, solicita un enlace nuevo desde la app móvil, en
                 <Text className="text-steel-200"> ¿Olvidaste tu contraseña?</Text>
@@ -168,7 +168,7 @@ function ChangePasswordScreen() {
           <Card>
             <View className="gap-5">
               <Banner tone="success" message="Tu contraseña quedó actualizada." />
-              <Text className="text-sm leading-5 text-steel-400">
+              <Text className="text-sm leading-5 text-steel-300">
                 Ya puedes iniciar sesión en la app móvil de ENTRYX con tu contraseña nueva.
               </Text>
             </View>

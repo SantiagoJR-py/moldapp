@@ -2,8 +2,6 @@ import { router, usePathname } from 'expo-router';
 import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import Animated, {
-  FadeInUp,
-  FadeOutUp,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -14,9 +12,10 @@ import Animated, {
 import { PlateChip } from '@/components/plates/plate-chip';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { isColombianPlate } from '@/constants/vehicle';
+import { appear, vanish } from '@/lib/motion';
 
 /** Pantallas donde la franja sobra: ya muestran las alertas o están resolviendo una. */
 const HIDDEN_ON = ['/alerts', '/gate-register'];
@@ -49,10 +48,7 @@ export function AlertStrip() {
   const count = pending.length;
 
   return (
-    <Animated.View
-      entering={FadeInUp.duration(motion.base)}
-      exiting={FadeOutUp.duration(motion.fast)}
-    >
+    <Animated.View entering={appear} exiting={vanish}>
       <PressableScale
         accessibilityLabel={`${count === 1 ? 'Un vehículo' : `${count} vehículos`} sin registrar. Resolver`}
         depth={0.99}

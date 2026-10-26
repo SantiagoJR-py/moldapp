@@ -1,13 +1,14 @@
 import { router, usePathname } from 'expo-router';
 import { Text, View } from 'react-native';
-import Animated, { ZoomIn, ZoomOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { isActive, tabsForRole, type NavItem } from '@/constants/navigation';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { useGateAlerts } from '@/context/gate-alerts';
 import { useSession } from '@/context/session';
+import { overlayIn, overlayOut } from '@/lib/motion';
 
 /** Barra de pestañas del celular, como la de una app de iPhone: destinos, nunca acciones. */
 export function TabBar() {
@@ -24,7 +25,7 @@ export function TabBar() {
       style={{
         flexDirection: 'row',
         borderTopWidth: 1,
-        borderTopColor: palette.ink700,
+        borderTopColor: palette.hairline,
         backgroundColor: palette.ink900,
         paddingTop: 6,
         paddingBottom: Math.max(insets.bottom, 8),
@@ -60,8 +61,8 @@ function Tab({ item, active, count }: { item: NavItem; active: boolean; count: n
           <Icon size={23} color={color} />
           {count > 0 ? (
             <Animated.View
-              entering={ZoomIn.duration(motion.base).springify().damping(14)}
-              exiting={ZoomOut.duration(motion.fast)}
+              entering={overlayIn}
+              exiting={overlayOut}
               style={{
                 position: 'absolute',
                 top: -5,

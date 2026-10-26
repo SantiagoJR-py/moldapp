@@ -34,7 +34,7 @@ export function DropZone({ onFile, disabled = false, title, hint }: DropZoneProp
         borderWidth: 1.5,
         borderStyle: 'dashed',
         borderColor: palette.ink600,
-        backgroundColor: palette.ink900,
+        backgroundColor: palette.ink800,
         paddingHorizontal: 24,
         paddingVertical: 32,
       }}
@@ -42,7 +42,7 @@ export function DropZone({ onFile, disabled = false, title, hint }: DropZoneProp
       <UploadIcon size={24} color={palette.accent400} />
       <View className="items-center gap-1">
         <Text className="text-center text-base font-semibold text-steel-100">{title}</Text>
-        <Text className="text-center text-xs leading-5 text-steel-500">{hint}</Text>
+        <Text className="text-center text-xs leading-5 text-steel-400">{hint}</Text>
       </View>
     </PressableScale>
   );

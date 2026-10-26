@@ -91,16 +91,15 @@ type ActivityListProps = {
   limit?: number;
 };
 
+/** Sin cambios no se muestra: una tarjeta que solo explica que no hay nada es ruido en portería. */
 export function ActivityList({ activity, now, limit = 6 }: ActivityListProps) {
+  if (activity !== null && activity.length === 0) return null;
+
   return (
     <View style={[plateCard, { gap: 2, paddingHorizontal: 16, paddingVertical: 12 }]}>
       <Text className="pb-1 text-base font-semibold text-steel-100">Cambios recientes</Text>
       {activity === null ? (
-        <Text className="py-2 text-sm text-steel-500">Cargando…</Text>
-      ) : activity.length === 0 ? (
-        <Text className="py-2 text-sm leading-5 text-steel-500">
-          Aquí aparece quién quita, restaura o cambia una cámara y quién corrige una lectura.
-        </Text>
+        <Text className="py-2 text-sm text-steel-400">Cargando…</Text>
       ) : (
         activity.slice(0, limit).map((item, index) => {
           const { title, detail } = describe(item);
@@ -110,7 +109,7 @@ export function ActivityList({ activity, now, limit = 6 }: ActivityListProps) {
               className="flex-row items-start gap-3"
               style={[
                 { paddingVertical: 10 },
-                index > 0 ? { borderTopWidth: 1, borderTopColor: palette.ink700 } : null,
+                index > 0 ? { borderTopWidth: 1, borderTopColor: palette.hairline } : null,
               ]}
             >
               <View className="mt-0.5">
@@ -119,12 +118,12 @@ export function ActivityList({ activity, now, limit = 6 }: ActivityListProps) {
               <View className="flex-1 gap-0.5">
                 <Text className="text-sm text-steel-100">{title}</Text>
                 {detail ? (
-                  <Text className="text-xs leading-4 text-steel-400" numberOfLines={2}>
+                  <Text className="text-xs leading-4 text-steel-300" numberOfLines={2}>
                     {detail}
                   </Text>
                 ) : null}
               </View>
-              <Text className="text-xs text-steel-500">
+              <Text className="text-xs text-steel-400">
                 {relativeTime(new Date(item.at).getTime(), now)}
               </Text>
             </View>

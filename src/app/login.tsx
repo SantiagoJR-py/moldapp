@@ -102,7 +102,7 @@ export default function LoginScreen() {
             onPress={() => router.push('/register')}
           />
         ) : (
-          <Text className="text-center text-xs leading-5 text-steel-500">
+          <Text className="text-center text-xs leading-5 text-steel-400">
             ¿Aún no tienes cuenta? El registro se hace desde el portal web de ENTRYX.
           </Text>
         )}

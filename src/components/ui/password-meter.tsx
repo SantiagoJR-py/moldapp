@@ -11,7 +11,7 @@ type PasswordMeterProps = {
 const BAR_COLOR = [palette.ink600, palette.danger, palette.warning, palette.success] as const;
 
 const LABEL_COLOR = [
-  'text-steel-500',
+  'text-steel-400',
   'text-state-danger',
   'text-state-warning',
   'text-state-success',

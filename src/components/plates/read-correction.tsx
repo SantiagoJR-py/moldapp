@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { Banner } from '@/components/ui/banner';
 import { IdIcon, PencilIcon } from '@/components/ui/icons';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { Segmented } from '@/components/ui/segmented';
 import { TextField } from '@/components/ui/text-field';
-import { motion, palette, radius } from '@/constants/theme';
+import { palette, radius } from '@/constants/theme';
 import { apiMessage } from '@/lib/api-messages';
 import { clockTime } from '@/lib/time';
 import { gateService } from '@/services/gate.service';
 import type { PlateDirection, PlateRead } from '@/services/plate-read.service';
+import { appear, vanish } from '@/lib/motion';
 
 /** Los motivos que más se repiten al corregir: un toque en vez de escribir. */
 const QUICK_REASONS = ['Sentido equivocado', 'Placa mal leída', 'Vehículo de prueba'];
@@ -39,7 +40,7 @@ export function CorrectionNote({ read }: { read: PlateRead }) {
         gap: 10,
         borderRadius: radius.field,
         borderCurve: 'continuous',
-        backgroundColor: palette.ink800,
+        backgroundColor: palette.ink700,
         paddingHorizontal: 12,
         paddingVertical: 10,
       }}
@@ -53,11 +54,11 @@ export function CorrectionNote({ read }: { read: PlateRead }) {
           {changes.length ? `: ${changes.join(' · ')}` : ''}
         </Text>
         {read.correctionNote ? (
-          <Text className="text-xs leading-4 text-steel-400">
+          <Text className="text-xs leading-4 text-steel-300">
             &quot;{read.correctionNote}&quot;
           </Text>
         ) : null}
-        <Text className="text-[11px] text-steel-500">
+        <Text className="text-[11px] text-steel-400">
           La lectura original se conserva en el historial (no se borra).
         </Text>
       </View>
@@ -114,15 +115,15 @@ export function CorrectionEditor({ read, onCancel, onSaved }: CorrectionEditorPr
 
   return (
     <Animated.View
-      entering={FadeInDown.duration(motion.base).springify().damping(22)}
-      exiting={FadeOut.duration(motion.fast)}
+      entering={appear}
+      exiting={vanish}
       style={{
         gap: 14,
         borderRadius: radius.field,
         borderCurve: 'continuous',
         borderWidth: 1,
         borderColor: palette.ink600,
-        backgroundColor: palette.ink800,
+        backgroundColor: palette.ink700,
         padding: 14,
       }}
     >
@@ -130,13 +131,13 @@ export function CorrectionEditor({ read, onCancel, onSaved }: CorrectionEditorPr
         <Text className="text-sm font-semibold text-steel-100">
           Corregir lectura de las {clockTime(new Date(read.seenAt).getTime())}
         </Text>
-        <Text className="text-xs leading-4 text-steel-400">
+        <Text className="text-xs leading-4 text-steel-300">
           La original no se borra: queda guardada y se ve quién la corrigió.
         </Text>
       </View>
 
       <View style={{ gap: 6 }}>
-        <Text className="text-xs font-medium uppercase tracking-wider text-steel-400">Sentido</Text>
+        <Text className="text-[13px] font-medium text-steel-300">Sentido</Text>
         <Segmented
           accessibilityLabel="Sentido de la lectura"
           value={direction}

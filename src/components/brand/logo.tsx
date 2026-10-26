@@ -173,7 +173,7 @@ export function BrandHeader({ markSize = 72, tagline }: BrandHeaderProps) {
     <View className="items-center gap-4">
       <AppMark size={markSize} />
       <Wordmark size="md" />
-      {tagline ? <Text className="text-center text-sm text-steel-400">{tagline}</Text> : null}
+      {tagline ? <Text className="text-center text-sm text-steel-300">{tagline}</Text> : null}
     </View>
   );
 }
